@@ -121,7 +121,7 @@ namespace PeerCastStation.ASF
     }
   }
 
-  internal class ASFChunk
+  public class ASFChunk
   {
     public enum ChunkType {
       Unknown,
@@ -193,6 +193,23 @@ namespace PeerCastStation.ASF
           var data    = BinaryReader.ReadBytes(stream, len-8);
           return new ASFChunk(type, len, seq_num, v1, v2, data);
         }
+      }
+      catch (EndOfStreamException) {
+        stream.Position = pos;
+        throw;
+      }
+    }
+
+    public static ASFChunk ReadPreheaderless(Stream stream, uint seq_num)
+    {
+      var pos = stream.Position;
+      try {
+        var type = BinaryReader.ReadUInt16LE(stream);
+        var len = BinaryReader.ReadUInt16LE(stream);
+        var data = BinaryReader.ReadBytes(stream, len);
+        len += 8;
+        var v1 = (ushort) ((type == 0x4824) ? 0x0c00 : 0x0000);
+        return new ASFChunk(type, len, seq_num, v1, len, data);
       }
       catch (EndOfStreamException) {
         stream.Position = pos;
@@ -332,8 +349,13 @@ namespace PeerCastStation.ASF
     public string Name { get { return "ASF(WMV or WMA)"; } }
     public Channel Channel { get; private set; }
 
-    private int      streamIndex = -1;
-    private DateTime streamOrigin;
+    protected int      streamIndex = -1;
+    protected DateTime streamOrigin;
+
+    protected virtual ASFChunk ReadNextChunk(Stream stream)
+    {
+      return ASFChunk.Read(stream);
+    }
 
     public ParsedContent Read(Stream stream)
     {
@@ -342,7 +364,7 @@ namespace PeerCastStation.ASF
       var pos = Channel.ContentPosition;
       try {
         while (chunks<8) {
-          var chunk = ASFChunk.Read(stream);
+          var chunk = ReadNextChunk(stream);
           chunks++;
           switch (chunk.KnownType) {
           case ASFChunk.ChunkType.Header: {
