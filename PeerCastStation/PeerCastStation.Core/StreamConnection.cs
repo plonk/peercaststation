@@ -314,6 +314,7 @@ namespace PeerCastStation.Core
             break;
           }
         }
+        Thread.Sleep(10);
       } while (sending_result!=null);
     }
 
