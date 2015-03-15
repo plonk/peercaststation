@@ -13,7 +13,8 @@ namespace PeerCastStation.Core
     private ManualResetEvent recvEvent        = new ManualResetEvent(false);
     private RateCounter      recvBytesCounter = new RateCounter(1000);
     private int              recvTimeout      = Timeout.Infinite;
-    private MemoryStream     recvStream       = new MemoryStream();
+    private DynamicRingBufferStream
+                             recvStream       = new DynamicRingBufferStream();
     private byte[]           recvBuffer       = new byte[RecvWindowSize];
     private IAsyncResult     recvResult       = null;
     private Exception        recvException    = null;
@@ -221,10 +222,7 @@ namespace PeerCastStation.Core
           res = proc(recvStream);
           if (res) {
             if (recvStream.Length>recvStream.Position) {
-              var new_stream = new MemoryStream((int)Math.Max(8192, recvStream.Length - recvStream.Position));
-              new_stream.Write(recvStream.GetBuffer(), (int)recvStream.Position, (int)(recvStream.Length - recvStream.Position));
-              new_stream.Position = 0;
-              recvStream = new_stream;
+              recvStream.Shift(recvStream.Position);
             }
             else {
               recvStream.Position = 0;
