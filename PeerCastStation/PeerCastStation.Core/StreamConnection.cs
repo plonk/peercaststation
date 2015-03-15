@@ -27,6 +27,7 @@ namespace PeerCastStation.Core
     private bool             closing          = false;
     private Stream           inputStream      = null;
     private Stream           outputStream     = null;
+    private ManualResetEvent notSending       = new ManualResetEvent(true);
 
     public Stream     InputStream       { get { return inputStream; } }
     public WaitHandle ReceiveWaitHandle { get { return recvEvent; } }
@@ -155,6 +156,9 @@ namespace PeerCastStation.Core
             if (!closing) sendException = e;
           }
         }
+        else {
+          notSending.Set();
+        }
       }
     }
 
@@ -164,6 +168,7 @@ namespace PeerCastStation.Core
         if (timedout && !((IAsyncResult)ar).IsCompleted && !closing) {
           sendException = new TimeoutException();
           sendResult = null;
+          notSending.Set();
         }
         else {
           OnSend((IAsyncResult)ar);
@@ -180,6 +185,7 @@ namespace PeerCastStation.Core
         while (pos<len) {
           var packet = new byte[Math.Min(len-pos, SendWindowSize)];
           Array.Copy(bytes, pos+offset, packet, 0, packet.Length);
+          notSending.Reset();
           sendPackets.Enqueue(packet);
           pos += packet.Length;
         }
@@ -304,18 +310,7 @@ namespace PeerCastStation.Core
     private void CleanupSend()
     {
       if (outputStream==null) return;
-      IAsyncResult sending_result;
-      do {
-        lock (sendLock) {
-          sending_result = sendResult;
-        }
-        if (sending_result!=null) {
-          if (!sending_result.AsyncWaitHandle.WaitOne(sendTimeout)) {
-            break;
-          }
-        }
-        Thread.Sleep(10);
-      } while (sending_result!=null);
+      notSending.WaitOne(sendTimeout);
     }
 
     public void Close()
