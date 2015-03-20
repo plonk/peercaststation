@@ -107,11 +107,23 @@ namespace PeerCastStation
       }
     }
 
+    [PecaSettings]
+    public class PlayControlSettings
+    {
+      public bool RequestRelay { get; set; }
+
+      public PlayControlSettings()
+      {
+        RequestRelay = true;
+      }
+    }
+
     public Guid BroadcastID { get; set; }
     public LoggerSettings           Logger           { get; set; }
     public ListenerSettings[]       Listeners        { get; set; }
     public AccessControllerSettings AccessController { get; set; }
     public YellowPageSettings[]     YellowPages      { get; set; }
+    public PlayControlSettings      PlayControl      { get; set; }
 
     public PeerCastStationSettings()
     {
@@ -119,6 +131,7 @@ namespace PeerCastStation
       Listeners        = new ListenerSettings[0];
       AccessController = new AccessControllerSettings();
       YellowPages      = new YellowPageSettings[0];
+      PlayControl      = new PlayControlSettings();
     }
 
     internal void Import(PeerCastStation.Properties.Settings settings)

@@ -181,6 +181,9 @@ namespace PeerCastStation.Main
             }
           }
         }
+        if (s.PlayControl!=null) {
+          peerCast.RequestRelay = s.PlayControl.RequestRelay;
+        }
       }
       catch (FormatException)
       {
@@ -224,6 +227,7 @@ namespace PeerCastStation.Main
           Uri      = yellowpage.Uri,
         }
       ).ToArray();
+      s.PlayControl = new PeerCastStationSettings.PlayControlSettings { RequestRelay = peerCast.RequestRelay };
       settings.Get<ChannelCleanerSettings>().InactiveLimit = ChannelCleaner.InactiveLimit;
       settings.Get<ChannelCleanerSettings>().Mode = ChannelCleaner.Mode;
       settings.Save();

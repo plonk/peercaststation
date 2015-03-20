@@ -544,5 +544,8 @@ namespace PeerCastStation.Core
     }
 
     private static Logger logger = new Logger(typeof(PeerCast));
+
+    // 知らないチャンネルの視聴要求が来た場合にリレーを開始するか。
+    public bool RequestRelay { get; set; }
   }
 }

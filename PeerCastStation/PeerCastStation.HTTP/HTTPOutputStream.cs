@@ -235,7 +235,7 @@ namespace PeerCastStation.HTTP
       if (request!=null) {
         Channel channel = null;
         Uri tracker = CreateTrackerUri(channel_id, request.Uri);
-        channel = PeerCast.RequestChannel(channel_id, tracker, true);
+        channel = PeerCast.RequestChannel(channel_id, tracker, PeerCast.RequestRelay);
         return new HTTPOutputStream(PeerCast, input_stream, output_stream, remote_endpoint, access_control, channel, request);
       }
       else {
