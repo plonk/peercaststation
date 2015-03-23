@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using PeerCastStation.Core;
 using PeerCastStation.FLV.RTMP;
+using System.Text.RegularExpressions;
 
 namespace PeerCastStation.FLV
 {
@@ -57,7 +58,7 @@ namespace PeerCastStation.FLV
         var val = metadata.Arguments[0]["maxBitrate"];
         if (!AMF.AMFValue.IsNull(val)) {
           double maxBitrate;
-          string maxBitrateStr = System.Text.RegularExpressions.Regex.Replace((string)val, @"([\d]+)k", "$1");
+          string maxBitrateStr = Bitrate.Replace((string)val, "$1");
           if (double.TryParse(maxBitrateStr, out maxBitrate)) {
             bitrate += maxBitrate;
           }
@@ -74,6 +75,7 @@ namespace PeerCastStation.FLV
       OnHeaderChanged(msg);
       OnContentChanged(msg);
     }
+    static readonly Regex Bitrate = new Regex(@"([\d]+)k");
 
     public void OnStart()
     {

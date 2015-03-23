@@ -65,23 +65,28 @@ namespace PeerCastStation.PCP
       this.StreamPos = null;
       foreach (var res in responses) {
         Match match = null;
-        if ((match = Regex.Match(res, @"^HTTP/1.\d (\d+) .*$")).Success) {
+        if ((match = StatusLine.Match(res)).Success) {
           this.StatusCode = Convert.ToInt32(match.Groups[1].Value);
         }
-        if ((match = Regex.Match(res, @"Content-Type:\s*(\S+)\s*$")).Success) {
+        if ((match = ContentTypeHeader.Match(res)).Success) {
           this.ContentType = match.Groups[1].Value;
         }
-        if ((match = Regex.Match(res, @"x-peercast-pcp:\s*(\d+)\s*$")).Success) {
+        if ((match = PcpHeader.Match(res)).Success) {
           this.PCPVersion = Convert.ToInt32(match.Groups[1].Value);
         }
-        if ((match = Regex.Match(res, @"x-peercast-pos:\s*(\d+)\s*$")).Success) {
+        if ((match = PosHeader.Match(res)).Success) {
           this.StreamPos = Convert.ToInt64(match.Groups[1].Value);
         }
-        if ((match = Regex.Match(res, @"Server:\s*(.*)\s*$")).Success) {
+        if ((match = ServerHeader.Match(res)).Success) {
           this.Server = match.Groups[1].Value;
         }
       }
     }
+    static readonly Regex StatusLine = new Regex(@"^HTTP/1.\d (\d+) .*$");
+    static readonly Regex ContentTypeHeader = new Regex(@"Content-Type:\s*(\S+)\s*$");
+    static readonly Regex PcpHeader = new Regex(@"x-peercast-pcp:\s*(\d+)\s*$");
+    static readonly Regex PosHeader = new Regex(@"x-peercast-pos:\s*(\d+)\s*$");
+    static readonly Regex ServerHeader = new Regex(@"Server:\s*(.*)\s*$");
   }
 
   public static class RelayRequestResponseReader

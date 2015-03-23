@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using System.Collections.Generic;
 using PeerCastStation.Core;
 using PeerCastStation.HTTP;
+using System.Text.RegularExpressions;
 
 namespace PeerCastStation.UI.HTTP
 {
@@ -237,7 +238,7 @@ namespace PeerCastStation.UI.HTTP
       {
         string idstr;
         if (query.TryGetValue("id", out idstr)) {
-          var md = System.Text.RegularExpressions.Regex.Match(idstr, @"([A-Fa-f0-9]{32})(\.\S+)?");
+          var md = ChannelPattern.Match(idstr);
           var channel_id = Guid.Empty;
           if (md.Success) {
             try {
@@ -252,6 +253,7 @@ namespace PeerCastStation.UI.HTTP
           return null;
         }
       }
+      static readonly Regex ChannelPattern = new Regex(@"([A-Fa-f0-9]{32})(\.\S+)?");
 
       private void OnBump(Dictionary<string, string> query)
       {

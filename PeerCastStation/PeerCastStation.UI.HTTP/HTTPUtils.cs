@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace PeerCastStation.UI.HTTP
 {
@@ -37,9 +38,7 @@ namespace PeerCastStation.UI.HTTP
       }
       else {
         var authorized = false;
-        var md = System.Text.RegularExpressions.Regex.Match(
-          request.Headers["AUTHORIZATION"],
-          @"\s*BASIC (\S+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        var md = Basic.Match(request.Headers["AUTHORIZATION"]);
         if (md.Success) {
           try {
             var authorization = System.Text.Encoding.ASCII.GetString(Convert.FromBase64String(md.Groups[1].Value)).Split(':');
@@ -59,6 +58,7 @@ namespace PeerCastStation.UI.HTTP
         return authorized;
       }
     }
+    static readonly Regex Basic = new Regex(@"\s*BASIC (\S+)", RegexOptions.IgnoreCase);
 
     public static string CreateResponseHeader(HttpStatusCode code, Dictionary<string, string> parameters)
     {

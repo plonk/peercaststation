@@ -52,15 +52,15 @@ namespace PeerCastStation.HTTP
       string path = "/";
       foreach (var req in requests) {
         Match match = null;
-        if ((match = Regex.Match(req, @"^(\w+) +(\S+) +HTTP/1.\d$", RegexOptions.IgnoreCase)).Success) {
+        if ((match = StatusLine.Match(req)).Success) {
           this.Method = match.Groups[1].Value.ToUpper();
           path = match.Groups[2].Value;
         }
-        else if ((match = Regex.Match(req, @"^Host:(.+)$", RegexOptions.IgnoreCase)).Success) {
+        else if ((match = HostHeader.Match(req)).Success) {
           host = match.Groups[1].Value.Trim();
           Headers["HOST"] = host;
         }
-        else if ((match = Regex.Match(req, @"^(\S*):(.+)$", RegexOptions.IgnoreCase)).Success) {
+        else if ((match = HeaderLine.Match(req)).Success) {
           Headers[match.Groups[1].Value.ToUpper()] = match.Groups[2].Value.Trim();
         }
       }
@@ -72,6 +72,9 @@ namespace PeerCastStation.HTTP
         this.Uri = null;
       }
     }
+    static readonly Regex StatusLine = new Regex(@"^(\w+) +(\S+) +HTTP/1.\d$", RegexOptions.IgnoreCase);
+    static readonly Regex HostHeader = new Regex(@"^Host:(.+)$", RegexOptions.IgnoreCase);
+    static readonly Regex HeaderLine = new Regex(@"^(\S*):(.+)$", RegexOptions.IgnoreCase);
   }
 
   /// <summary>
@@ -134,12 +137,7 @@ namespace PeerCastStation.HTTP
 
     private string ParseEndPoint(string text)
     {
-      var ipv4port = Regex.Match(text, @"\A(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{1,5})\z");
-      var ipv6port = Regex.Match(text, @"\A\[([a-fA-F0-9:]+)\]:(\d{1,5})\z");
-      var hostport = Regex.Match(text, @"\A([a-zA-Z](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*):(\d{1,5})\z");
-      var ipv4addr = Regex.Match(text, @"\A(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\z");
-      var ipv6addr = Regex.Match(text, @"\A([a-fA-F0-9:.]+)\z");
-      var hostaddr = Regex.Match(text, @"\A([a-zA-Z](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*)\z");
+      var ipv4port = Ipv4Port.Match(text);
       if (ipv4port.Success) {
         IPAddress addr;
         int port;
@@ -150,6 +148,7 @@ namespace PeerCastStation.HTTP
           return new IPEndPoint(addr, port).ToString();
         }
       }
+      var ipv6port = Ipv6Port.Match(text);
       if (ipv6port.Success) {
         IPAddress addr;
         int port;
@@ -160,6 +159,7 @@ namespace PeerCastStation.HTTP
           return new IPEndPoint(addr, port).ToString();
         }
       }
+      var hostport = HostPort.Match(text);
       if (hostport.Success) {
         string host = hostport.Groups[1].Value;
         int port;
@@ -167,6 +167,7 @@ namespace PeerCastStation.HTTP
           return String.Format("{0}:{1}", host, port);
         }
       }
+      var ipv4addr = Ipv4Addr.Match(text);
       if (ipv4addr.Success) {
         IPAddress addr;
         if (IPAddress.TryParse(ipv4addr.Groups[1].Value, out addr) &&
@@ -174,6 +175,7 @@ namespace PeerCastStation.HTTP
           return addr.ToString();
         }
       }
+      var ipv6addr = Ipv6Addr.Match(text);
       if (ipv6addr.Success) {
         IPAddress addr;
         if (IPAddress.TryParse(ipv6addr.Groups[1].Value, out addr) &&
@@ -181,17 +183,24 @@ namespace PeerCastStation.HTTP
           return String.Format("[{0}]", addr.ToString());
         }
       }
+      var hostaddr = HostAddr.Match(text);
       if (hostaddr.Success) {
         string host = hostaddr.Groups[1].Value;
         return host;
       }
       return null;
     }
+    static readonly Regex Ipv4Port = new Regex(@"\A(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}):(\d{1,5})\z");
+    static readonly Regex Ipv6Port = new Regex(@"\A\[([a-fA-F0-9:]+)\]:(\d{1,5})\z");
+    static readonly Regex HostPort = new Regex(@"\A([a-zA-Z](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*):(\d{1,5})\z");
+    static readonly Regex Ipv4Addr = new Regex(@"\A(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\z");
+    static readonly Regex Ipv6Addr = new Regex(@"\A([a-fA-F0-9:.]+)\z");
+    static readonly Regex HostAddr = new Regex(@"\A([a-zA-Z](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*)\z");
 
     private Uri CreateTrackerUri(Guid channel_id, Uri request_uri)
     {
       string tip = null;
-      foreach (Match param in Regex.Matches(request_uri.Query, @"(&|\?)([^&=]+)=([^&=]+)")) {
+      foreach (Match param in QueryFieldValue.Matches(request_uri.Query)) {
         if (Uri.UnescapeDataString(param.Groups[2].Value)=="tip") {
           tip = Uri.UnescapeDataString(param.Groups[3].Value);
           break;
@@ -210,6 +219,7 @@ namespace PeerCastStation.HTTP
         return null;
       }
     }
+    static readonly Regex QueryFieldValue = new Regex(@"(&|\?)([^&=]+)=([^&=]+)");
 
     /// <summary>
     /// 出力ストリームを作成します
@@ -264,12 +274,13 @@ namespace PeerCastStation.HTTP
           (request.Method=="GET" || request.Method=="HEAD") &&
           request.Uri!=null) {
         Match match = null;
-        if ((match = Regex.Match(request.Uri.AbsolutePath, @"^/(stream/|pls/)([0-9A-Fa-f]{32}).*$")).Success) {
+        if ((match = Path.Match(request.Uri.AbsolutePath)).Success) {
           return new Guid(match.Groups[2].Value);
         }
       }
       return null;
     }
+    static readonly Regex Path = new Regex(@"^/(stream/|pls/)([0-9A-Fa-f]{32}).*$");
 
     /// <summary>
     /// ファクトリオブジェクトを初期化します
@@ -409,16 +420,18 @@ namespace PeerCastStation.HTTP
       if (Channel==null || Channel.Status==SourceStreamStatus.Error) {
         return BodyType.None;
       }
-      else if (Regex.IsMatch(request.Uri.AbsolutePath, @"^/stream/[0-9A-Fa-f]{32}.*$")) {
+      else if (StreamPath.IsMatch(request.Uri.AbsolutePath)) {
         return BodyType.Content;
       }
-      else if (Regex.IsMatch(request.Uri.AbsolutePath, @"^/pls/[0-9A-Fa-f]{32}.*$")) {
+      else if (PlsPath.IsMatch(request.Uri.AbsolutePath)) {
         return BodyType.Playlist;
       }
       else {
         return BodyType.None;
       }
     }
+    static readonly Regex StreamPath = new Regex(@"^/stream/[0-9A-Fa-f]{32}.*$");
+    static readonly Regex PlsPath = new Regex(@"^/pls/[0-9A-Fa-f]{32}.*$");
 
     /// <summary>
     /// HTTPのレスポンスヘッダを作成して取得します

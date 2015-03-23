@@ -37,15 +37,17 @@ namespace PeerCastStation.HTTP
       Headers = new Dictionary<string, string>();
       foreach (var req in requests) {
         Match match = null;
-        if ((match = Regex.Match(req, @"^HTTP/(1.\d) (\d+) .*$")).Success) {
+        if ((match = StatusLine.Match(req)).Success) {
           this.Version = match.Groups[1].Value;
           this.Status = Int32.Parse(match.Groups[2].Value);
         }
-        else if ((match = Regex.Match(req, @"^(\S*):\s*(.*)\s*$", RegexOptions.IgnoreCase)).Success) {
+        else if ((match = HeaderLine.Match(req)).Success) {
           Headers[match.Groups[1].Value.ToUpperInvariant()] = match.Groups[2].Value;
         }
       }
     }
+    static readonly Regex StatusLine = new Regex(@"^HTTP/(1.\d) (\d+) .*$");
+    static readonly Regex HeaderLine = new Regex(@"^(\S*):\s*(.*)\s*$", RegexOptions.IgnoreCase);
   }
 
   /// <summary>

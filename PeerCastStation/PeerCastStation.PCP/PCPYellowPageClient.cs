@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using PeerCastStation.Core;
 using System.Threading;
 using System.Net;
+using System.Text.RegularExpressions;
 
 namespace PeerCastStation.PCP
 {
@@ -181,7 +182,7 @@ namespace PeerCastStation.PCP
         stream.Write(request, 0, request.Length);
         var response = ReadResponse(stream);
         if (response!=null) {
-          var md = System.Text.RegularExpressions.Regex.Match(response, @"^HTTP/1.\d (\d+) ");
+          var md = StatusLine.Match(response);
           if (md.Success) {
             var status = md.Groups[1].Value;
             switch (status) {
@@ -223,6 +224,7 @@ namespace PeerCastStation.PCP
       }
       return res;
     }
+    static readonly Regex StatusLine = new Regex(@"^HTTP/1.\d (\d+) ");
 
     private Thread announceThread;
     public IAnnouncingChannel Announce(Channel channel)

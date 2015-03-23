@@ -57,7 +57,7 @@ namespace PeerCastStation.PCP
       this.UserAgent = null;
       foreach (var req in requests) {
         Match match = null;
-        if ((match = Regex.Match(req, @"^GET (\S+) HTTP/1.\d$")).Success) {
+        if ((match = StatusLine.Match(req)).Success) {
           Uri uri;
           if (Uri.TryCreate(new Uri("http://localhost/"), match.Groups[1].Value, out uri)) {
             this.Uri = uri;
@@ -66,17 +66,21 @@ namespace PeerCastStation.PCP
             this.Uri = null;
           }
         }
-        else if ((match = Regex.Match(req, @"^x-peercast-pcp:\s*(\d+)\s*$", RegexOptions.IgnoreCase)).Success) {
+        else if ((match = PcpHeader.Match(req)).Success) {
           this.PCPVersion = Int32.Parse(match.Groups[1].Value);
         }
-        else if ((match = Regex.Match(req, @"^x-peercast-pos:\s*(\d+)\s*$", RegexOptions.IgnoreCase)).Success) {
+        else if ((match = PosHeader.Match(req)).Success) {
           this.StreamPos = Int64.Parse(match.Groups[1].Value);
         }
-        else if ((match = Regex.Match(req, @"^User-Agent:\s*(.*)\s*$", RegexOptions.IgnoreCase)).Success) {
+        else if ((match = UserAgentHeader.Match(req)).Success) {
           this.UserAgent = match.Groups[1].Value;
         }
       }
     }
+    static readonly Regex StatusLine = new Regex(@"^GET (\S+) HTTP/1.\d$");
+    static readonly Regex PcpHeader = new Regex(@"^x-peercast-pcp:\s*(\d+)\s*$", RegexOptions.IgnoreCase);
+    static readonly Regex PosHeader = new Regex(@"^x-peercast-pos:\s*(\d+)\s*$", RegexOptions.IgnoreCase);
+    static readonly Regex UserAgentHeader = new Regex(@"^User-Agent:\s*(.*)\s*$", RegexOptions.IgnoreCase);
   }
 
   /// <summary>
@@ -181,12 +185,13 @@ namespace PeerCastStation.PCP
       var request = ParseRequest(header);
       if (request!=null && request.Uri!=null && request.PCPVersion==1) {
         Match match = null;
-        if ((match = Regex.Match(request.Uri.AbsolutePath, @"^/channel/([0-9A-Fa-f]{32}).*$")).Success) {
+        if ((match = ChannelPath.Match(request.Uri.AbsolutePath)).Success) {
           return new Guid(match.Groups[1].Value);
         }
       }
       return null;
     }
+    static readonly Regex ChannelPath = new Regex(@"^/channel/([0-9A-Fa-f]{32}).*$");
 
     /// <summary>
     /// ファクトリオブジェクトを初期化します
