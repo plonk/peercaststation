@@ -52,19 +52,15 @@ namespace PeerCastStation.HTTP
       string path = "/";
       foreach (var req in requests) {
         Match match = null;
-        if ((match = StatusLine.Match(req)).Success) {
+        if ((match = HeaderLine.Match(req)).Success) {
+          Headers[match.Groups[1].Value.ToUpper()] = match.Groups[2].Value.Trim();
+        } else if ((match = RequestLine.Match(req)).Success) {
           this.Method = match.Groups[1].Value.ToUpper();
           path = match.Groups[2].Value;
         }
-        else if ((match = HostHeader.Match(req)).Success) {
-          host = match.Groups[1].Value.Trim();
-          Headers["HOST"] = host;
-        }
-        else if ((match = HeaderLine.Match(req)).Success) {
-          Headers[match.Groups[1].Value.ToUpper()] = match.Groups[2].Value.Trim();
-        }
       }
       Uri uri;
+      Headers.TryGetValue("HOST", out host);
       if (Uri.TryCreate("http://" + host + path, UriKind.Absolute, out uri)) {
         this.Uri = uri;
       }
@@ -72,8 +68,7 @@ namespace PeerCastStation.HTTP
         this.Uri = null;
       }
     }
-    static readonly Regex StatusLine = new Regex(@"^(\w+) +(\S+) +HTTP/1.\d$", RegexOptions.IgnoreCase);
-    static readonly Regex HostHeader = new Regex(@"^Host:(.+)$", RegexOptions.IgnoreCase);
+    static readonly Regex RequestLine = new Regex(@"^(\w+) +(\S+) +HTTP/1.\d$", RegexOptions.IgnoreCase);
     static readonly Regex HeaderLine = new Regex(@"^(\S*):(.+)$", RegexOptions.IgnoreCase);
   }
 
