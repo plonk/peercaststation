@@ -15,14 +15,15 @@ namespace PeerCastStation.Main
       get { return plugins.Where(p => p.IsUsable); }
     }
 
-    private PecaSettings settings = new PecaSettings(PecaSettings.DefaultFileName);
+    private PecaSettings settings;
     public override PecaSettings Settings
     {
       get { return settings; }
     }
 
-    public Application()
+    public Application(string settingsFile)
     {
+      settings = new PecaSettings(settingsFile);
       peerCast.AgentName = AppSettingsReader.GetString("AgentName", "PeerCastStation");
       LoadPlugins();
     }
@@ -253,7 +254,6 @@ namespace PeerCastStation.Main
     [STAThread]
     static void Main(string[] args)
     {
-      AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
       var first_instance = CheckIsFirstInstance(ref killWaitHandle);
       if (args.Contains("-kill")) {
         killWaitHandle.Set();
@@ -262,12 +262,19 @@ namespace PeerCastStation.Main
       if (!first_instance && !args.Contains("-multi")) {
         return;
       }
-      (new Application()).Run();
+      var settingsFile = PecaSettings.DefaultFileName;
+      int idx = Array.IndexOf(args, "-settings");
+      if (idx != -1 && args.Length > idx+1) {
+        settingsFile = args[idx+1];
+      }
+      var self = new Application(settingsFile);
+      AppDomain.CurrentDomain.UnhandledException += self.OnUnhandledException;
+      self.Run();
     }
 
-    static void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
+    void OnUnhandledException(object sender, UnhandledExceptionEventArgs args)
     {
-      var dir = System.IO.Path.GetDirectoryName(PecaSettings.DefaultFileName);
+      var dir = System.IO.Path.GetDirectoryName(settings.FileName);
       System.IO.Directory.CreateDirectory(dir);
       using (var file=System.IO.File.AppendText(System.IO.Path.Combine(dir, "exception.log"))) {
         file.WriteLine("{0}: {1} (OS:{2}, CLR:{3})",
