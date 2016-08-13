@@ -2,9 +2,7 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{3D030F73-33A1-4FEF-9A3F-D8CD34FC63A2}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -17,9 +15,6 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\PeerCastStation\</SolutionDir>
     <RestorePackages>true</RestorePackages>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
@@ -30,6 +25,8 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <WarningLevel>4</WarningLevel>
+    <Optimize>false</Optimize>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
@@ -41,6 +38,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
     <UseVSHostingProcess>true</UseVSHostingProcess>
+    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>peercaststation.ico</ApplicationIcon>
@@ -53,8 +51,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Configuration" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ChannelNotifier.cs" />
@@ -100,10 +98,6 @@
     <ProjectReference Include="..\PeerCastStation.UI.HTTP\PeerCastStation.UI.HTTP.csproj">
       <Project>{BF5E0B6D-961A-4216-BACF-01D80AB3D6BB}</Project>
       <Name>PeerCastStation.UI.HTTP</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PeerCastStation.WPF\PeerCastStation.WPF.csproj">
-      <Project>{5ea68141-ac06-428b-9526-a6835e0cc2b2}</Project>
-      <Name>PeerCastStation.WPF</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
