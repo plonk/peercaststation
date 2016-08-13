@@ -459,10 +459,12 @@ namespace PeerCastStation.FLV.RTMP
         break;
       }
 
+      Logger.Debug ("{0}:{1}", msg.ReceivedLength, msg.BodyLength);
       msg.ReceivedLength += RecvStream(
         msg.Body,
         msg.ReceivedLength,
         Math.Min(recvChunkSize, msg.BodyLength-msg.ReceivedLength));
+      Logger.Debug ("{0}:{1}", msg.ReceivedLength, msg.BodyLength);
       if (msg.ReceivedLength>=msg.BodyLength) {
         messages.Enqueue(msg.ToMessage());
       }
@@ -559,6 +561,7 @@ namespace PeerCastStation.FLV.RTMP
 
     private void ProcessMessage(RTMPMessage msg)
     {
+      Logger.Debug ("MessageType: {0}", msg.MessageType);
       switch (msg.MessageType) {
       case RTMPMessageType.SetChunkSize:
         OnSetChunkSize(new SetChunkSizeMessage(msg));
@@ -612,6 +615,7 @@ namespace PeerCastStation.FLV.RTMP
     void OnSetChunkSize(SetChunkSizeMessage msg)
     {
       recvChunkSize = Math.Min(msg.ChunkSize, 0xFFFFFF);
+      Logger.Debug ("Chunk size set to {0}", recvChunkSize);
     }
 
     void OnAbort(AbortMessage msg)
