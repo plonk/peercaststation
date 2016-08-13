@@ -62,6 +62,14 @@ namespace PeerCastStation.FLV.RTMP
       {
       }
     }
+    private class ProtocolViolationException
+      : ApplicationException
+    {
+      public ProtocolViolationException(string message)
+        : base(message)
+      {
+      }
+    }
     private TcpClient client;
     private FLVContentBuffer flvBuffer;
     private bool useContentBitrate;
@@ -220,6 +228,11 @@ namespace PeerCastStation.FLV.RTMP
       }
       catch (ConnectionStoppedExcception) {
         this.state = ConnectionState.Closed;
+      }
+      catch (ProtocolViolationException e) {
+        Logger.Error (e);
+        DoStop (StopReason.BadAgentError);
+        this.state = ConnectionState.Error;
       }
       SyncContext.ProcessAll();
       OnStopped();
@@ -411,8 +424,16 @@ namespace PeerCastStation.FLV.RTMP
 
       RTMPMessageBuilder msg = null;
       RTMPMessageBuilder last_msg = null;
-      lastMessages.TryGetValue(chunk_stream_id, out last_msg);
-      switch ((basic_header & 0xC0)>>6) {
+      var chunk_type = (basic_header & 0xC0) >> 6;
+      if (!lastMessages.TryGetValue (chunk_stream_id, out last_msg)) {
+        if (chunk_type != 0) {
+          var err_msg = String.Format ("first chunk must be of type 0 (got type {0} chunk in chunk stream {1})",
+                          chunk_type,
+                          chunk_stream_id);
+          throw new ProtocolViolationException (err_msg);
+        }
+      }
+      switch (chunk_type) {
       case 0:
         using (var reader=new RTMPBinaryReader(new MemoryStream(RecvStream(11)))) {
           long timestamp  = reader.ReadUInt24();
