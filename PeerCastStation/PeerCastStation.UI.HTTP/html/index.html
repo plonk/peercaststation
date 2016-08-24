@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -61,6 +61,24 @@
             <tr>
               <th>起動時間</th>
               <td><span data-bind="text:uptimeReadable"></span></td>
+            </tr>
+            <tr>
+              <th>CPU時間</th>
+              <td><span data-bind="text:totalProcessorTime"></span></td>
+            </tr>
+            <tr>
+              <th>仮想メモリ</th>
+              <td>
+                <span data-bind="text:virtualMemorySizeReadable"></span> /
+                <span data-bind="text:peakVirtualMemorySizeReadable"></span> (ピーク)
+              </td>
+            </tr>
+            <tr>
+              <th>ワーキングセット</th>
+              <td>
+                <span data-bind="text:workingSetReadable"></span> /
+                <span data-bind="text:peakWorkingSetReadable"></span> (ピーク)
+              </td>
             </tr>
             <tr>
               <th>ポート開放</th>

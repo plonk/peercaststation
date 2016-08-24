@@ -9,6 +9,7 @@ using PeerCastStation.UI.HTTP.JSONRPC;
 using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace PeerCastStation.UI.HTTP
 {
@@ -272,6 +273,12 @@ namespace PeerCastStation.UI.HTTP
             System.Net.Sockets.AddressFamily.InterNetwork,
             Core.OutputStreamType.Play);
         res["localDirectEndPoint"]  = endpoint!=null ? new JArray(endpoint.Address.ToString(), endpoint.Port) : null;
+        var proc = Process.GetCurrentProcess ();
+        res["workingSet"]            = proc.WorkingSet64;
+        res["peakWorkingSet"]        = proc.PeakWorkingSet64;
+        res["virtualMemorySize"]     = proc.VirtualMemorySize64;
+        res["peakVirtualMemorySize"] = proc.PeakVirtualMemorySize64;
+        res["totalProcessorTime"]    = proc.TotalProcessorTime;
         return res;
       }
 

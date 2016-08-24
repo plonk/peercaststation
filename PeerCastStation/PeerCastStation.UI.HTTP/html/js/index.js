@@ -1,16 +1,21 @@
 
 var IndexViewModel = new function() {
   var self = this;
-  self.apiVersion           = ko.observable(null);
-  self.agentName            = ko.observable(null);
-  self.isFirewalled         = ko.observable(null);
-  self.uptime               = ko.observable(null);
-  self.globalRelayEndPoint  = ko.observable(null);
-  self.globalDirectEndPoint = ko.observable(null);
-  self.localRelayEndPoint   = ko.observable(null);
-  self.localDirectEndPoint  = ko.observable(null);
-  self.plugins              = ko.observableArray();
-  self.pluginDLLs           = ko.observableArray();
+  self.apiVersion            = ko.observable(null);
+  self.agentName             = ko.observable(null);
+  self.isFirewalled          = ko.observable(null);
+  self.uptime                = ko.observable(null);
+  self.workingSet            = ko.observable(null);
+  self.peakWorkingSet        = ko.observable(null);
+  self.virtualMemorySize     = ko.observable(null);
+  self.peakVirtualMemorySize = ko.observable(null);
+  self.totalProcessorTime    = ko.observable(null);
+  self.globalRelayEndPoint   = ko.observable(null);
+  self.globalDirectEndPoint  = ko.observable(null);
+  self.localRelayEndPoint    = ko.observable(null);
+  self.localDirectEndPoint   = ko.observable(null);
+  self.plugins               = ko.observableArray();
+  self.pluginDLLs            = ko.observableArray();
 
   self.firewalledStatus = ko.computed(function() {
     var firewalled = self.isFirewalled();
@@ -30,6 +35,39 @@ var IndexViewModel = new function() {
     var minutes = Math.floor(seconds /   60) % 60;
     var hours   = Math.floor(seconds / 3600);
     return hours + ":" + (minutes<10 ? ("0"+minutes) : minutes);
+  });
+
+  function twoDecimalPlaces(str) {
+    var m = str.match(/[^.]*\..{0,2}/);
+    if (m == null) {
+      return str;
+    } else {
+      return m[0];
+    }
+  }
+
+  function convertMemoryReadable(bytes) {
+      if (bytes > 1024 * 1024 * 1024) {
+          return twoDecimalPlaces(String(bytes / 1024 / 1024 / 1024)) + " GB";
+      } else {
+          return twoDecimalPlaces(String(bytes / 1024 / 1024)) + " MB";
+      }
+  }
+
+  self.workingSetReadable = ko.computed(function() {
+      return convertMemoryReadable(self.workingSet());
+  });
+  self.peakWorkingSetReadable = ko.computed(function() {
+      return convertMemoryReadable(self.peakWorkingSet());
+  });
+  self.virtualMemorySizeReadable = ko.computed(function() {
+      return convertMemoryReadable(self.virtualMemorySize());
+  });
+  self.peakVirtualMemorySizeReadable = ko.computed(function() {
+      return convertMemoryReadable(self.peakVirtualMemorySize());
+  });
+  self.totalProcessorTimeReadable = ko.computed(function() {
+      return convertMemoryReadable(self.totalProcessorTime());
   });
 
   self.globalRelayAddress = ko.computed(function() {
@@ -53,16 +91,15 @@ var IndexViewModel = new function() {
   });
 
   self.update = function() {
-    PeerCast.getVersionInfo(function(result) {
-      if (result) {
-        self.apiVersion(result.apiVersion);
-        self.agentName(result.agentName);
-      }
-    });
     PeerCast.getStatus(function(result) {
       if (result) {
         self.isFirewalled(result.isFirewalled);
         self.uptime(result.uptime);
+        self.workingSet(result.workingSet);
+        self.peakWorkingSet(result.peakWorkingSet);
+        self.virtualMemorySize(result.virtualMemorySize);
+        self.peakVirtualMemorySize(result.peakVirtualMemorySize);
+        self.totalProcessorTime(twoDecimalPlaces(result.totalProcessorTime));
         self.globalRelayEndPoint(result.globalRelayEndPoint);
         self.globalDirectEndPoint(result.globalDirectEndPoint);
         self.localRelayEndPoint(result.localRelayEndPoint);
@@ -72,6 +109,12 @@ var IndexViewModel = new function() {
   };
 
   $(document).ready(function() {
+    PeerCast.getVersionInfo(function(result) {
+      if (result) {
+        self.apiVersion(result.apiVersion);
+        self.agentName(result.agentName);
+      }
+    });
     PeerCast.getPlugins(function(result) {
       if (result) {
         var pluginDLLs = {};
@@ -97,6 +140,8 @@ var IndexViewModel = new function() {
         self.plugins.splice.apply(self.plugins, [0, self.plugins().length].concat(plugins));
       }
     });
+
+    setInterval(self.update, 1000);
   });
 
   self.bind = function (target) {
