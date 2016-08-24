@@ -112,6 +112,7 @@ namespace PeerCastStation.UI.HTTP
       env["owin.ResponseStatusCode"] = 200;
       env["owin.ResponseProtocol"]   = this.request.Protocol;
       SetHeader(response_headers, "Server", PeerCast.AgentName);
+      SetHeader(response_headers, "Date", DateTime.UtcNow.ToString("r"));
       return env;
     }
 

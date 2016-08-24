@@ -130,10 +130,18 @@ namespace PeerCastStation.UI.HTTP
         if (!File.Exists(localpath)) throw new HTTPError(HttpStatusCode.Forbidden);
       }
       if (File.Exists(localpath)) {
+        String[] strings;
+        if (env.RequestHeaders.TryGetValue("IF-MODIFIED-SINCE", out strings) && strings.Length > 0) {
+          var if_modified_since = Convert.ToDateTime(env.RequestHeaders["IF-MODIFIED-SINCE"][0]).ToUniversalTime();
+          if (File.GetLastWriteTimeUtc (localpath) <= if_modified_since) {
+            throw new HTTPError (HttpStatusCode.NotModified);
+          }
+        }
         var contents = File.ReadAllBytes(localpath);
         var content_desc = GetFileDesc(Path.GetExtension(localpath));
-        env.SetResponseHeader("Content-Type",   content_desc.MimeType);
+        env.SetResponseHeader("Content-Type", content_desc.MimeType);
         env.SetResponseHeader("Content-Length", contents.Length.ToString());
+        env.SetResponseHeader("Last-Modified", File.GetLastWriteTimeUtc(localpath).ToString("r"));
         if (env.AccessControlInfo.AuthenticationKey!=null) {
           env.SetResponseHeader("Set-Cookie", "auth=" + HTTPUtils.CreateAuthorizationToken(env.AccessControlInfo.AuthenticationKey));
         }
