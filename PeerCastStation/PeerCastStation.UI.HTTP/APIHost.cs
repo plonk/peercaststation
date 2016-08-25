@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace PeerCastStation.UI.HTTP
 {
@@ -279,7 +280,36 @@ namespace PeerCastStation.UI.HTTP
         res["virtualMemorySize"]     = proc.VirtualMemorySize64;
         res["peakVirtualMemorySize"] = proc.PeakVirtualMemorySize64;
         res["totalProcessorTime"]    = proc.TotalProcessorTime;
+
+        String mono;
+        if (isRunningOnMono()) {
+          mono = "; Mono " + getMonoVersion();
+        }
+        else {
+          mono = "";
+        }
+        res["environmentVersion"] = $"CLR {System.Environment.Version} ({System.Environment.OSVersion}" + mono + ")";
+
         return res;
+      }
+
+      private bool isRunningOnMono() 
+      {
+        return Type.GetType("Mono.Runtime") != null;
+      }
+
+      private String getMonoVersion() {
+        Type type = Type.GetType("Mono.Runtime");
+        if (type != null) {                                          
+          MethodInfo dispalayName = type.GetMethod("GetDisplayName", BindingFlags.NonPublic | BindingFlags.Static); 
+          if (dispalayName != null)
+            return (String)dispalayName.Invoke(null, null);
+          else
+            return "Unknown";
+        }
+        else {
+          return "Unknown";
+        }
       }
 
       [RPCMethod("getExternalIPAddresses")]

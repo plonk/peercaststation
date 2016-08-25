@@ -63,24 +63,6 @@
               <td><span data-bind="text:uptimeReadable"></span></td>
             </tr>
             <tr>
-              <th>CPU時間</th>
-              <td><span data-bind="text:totalProcessorTime"></span></td>
-            </tr>
-            <tr>
-              <th>仮想メモリ</th>
-              <td>
-                <span data-bind="text:virtualMemorySizeReadable"></span> /
-                <span data-bind="text:peakVirtualMemorySizeReadable"></span> (ピーク)
-              </td>
-            </tr>
-            <tr>
-              <th>ワーキングセット</th>
-              <td>
-                <span data-bind="text:workingSetReadable"></span> /
-                <span data-bind="text:peakWorkingSetReadable"></span> (ピーク)
-              </td>
-            </tr>
-            <tr>
               <th>ポート開放</th>
               <td><span data-bind="text:firewalledStatus"></span></td>
             </tr>
@@ -99,6 +81,35 @@
             <tr>
               <th>視聴可能アドレス(LAN内)</th>
               <td><span data-bind="text:localDirectAddress"></span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="row-fluid">
+        <div class="span6">
+          <h2>環境</h2>
+          <table class="table">
+            <tr>
+              <th>バージョン</th>
+              <td><span data-bind="text:environmentVersion"></span></td>
+            </tr>
+            <tr>
+              <th>CPU時間</th>
+              <td><span data-bind="text:totalProcessorTime"></span></td>
+            </tr>
+            <tr>
+              <th>仮想メモリ</th>
+              <td>
+                <span data-bind="text:virtualMemorySizeReadable"></span> /
+                <span data-bind="text:peakVirtualMemorySizeReadable"></span> (ピーク)
+              </td>
+            </tr>
+            <tr>
+              <th>ワーキングセット</th>
+              <td>
+                <span data-bind="text:workingSetReadable"></span> /
+                <span data-bind="text:peakWorkingSetReadable"></span> (ピーク)
+              </td>
             </tr>
           </table>
         </div>

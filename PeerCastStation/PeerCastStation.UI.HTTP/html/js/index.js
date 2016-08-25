@@ -14,6 +14,7 @@ var IndexViewModel = new function() {
   self.globalDirectEndPoint  = ko.observable(null);
   self.localRelayEndPoint    = ko.observable(null);
   self.localDirectEndPoint   = ko.observable(null);
+  self.environmentVersion    = ko.observable(null);
   self.plugins               = ko.observableArray();
   self.pluginDLLs            = ko.observableArray();
 
@@ -104,6 +105,7 @@ var IndexViewModel = new function() {
         self.globalDirectEndPoint(result.globalDirectEndPoint);
         self.localRelayEndPoint(result.localRelayEndPoint);
         self.localDirectEndPoint(result.localDirectEndPoint);
+        self.environmentVersion(result.environmentVersion);
       }
     });
   };
