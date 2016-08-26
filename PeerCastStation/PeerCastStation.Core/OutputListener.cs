@@ -243,7 +243,7 @@ namespace PeerCastStation.Core
     {
       logger.Debug("Output thread started");
       client.ReceiveBufferSize = 16*1024;
-      client.SendBufferSize    = 16*1024;
+      client.SendBufferSize    = 128*1024;
       client.NoDelay = true;
       var stream = client.GetStream();
       int trying = 0;
