@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -53,21 +53,24 @@
     <div class="container-fluid" id="logs">
       <h1>ログ</h1>
       <div class="row-fluid">
-        <div class="span11">
-          <select data-bind="value:logLevel">
-            <option value="0">なし</option>
-            <option value="2">エラー</option>
-            <option value="3">警告</option>
-            <option value="4">情報</option>
-            <option value="5">デバッグ</option>
-          </select>
+        <div class="span10">
+          <div class="form-inline" style="margin-bottom: 10px">
+            <select class="form-control" data-bind="value:logLevel">
+              <option value="0">なし</option>
+              <option value="2">エラー</option>
+              <option value="3">警告</option>
+              <option value="4">情報</option>
+              <option value="5">デバッグ</option>
+            </select>
+            <label class="checkbox"><input class="form-control" type="checkbox" data-bind="checked:paused"> 一時停止</input>
+          </div>
         </div>
-        <div class="span1">
-          <button class="btn" data-bind="click:clear">クリア</button>
+        <div class="span2">
+          <button class="btn btn-default btn-block" data-bind="click:clear">クリア</button>
         </div>
       </div>
       <div class="row-fluid">
-        <pre data-bind="text:logs"></pre>
+        <textarea data-bind="text:logs" style="width: 100%; height: calc(100vh - 200px); font-size: 12px; font-family: monospace; line-height: 1.2em; cursor: text" readonly></textarea>
       </div>
     </div>
   </body>

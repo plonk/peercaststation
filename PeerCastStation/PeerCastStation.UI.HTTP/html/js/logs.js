@@ -2,6 +2,7 @@
 var LogsViewModel = new function() {
   var self = this;
   self.level    = ko.observable(0);
+  self.paused   = ko.observable(false);
   self.logs     = ko.observable('');
   self.logLevel = ko.computed({
     read: function() { return self.level().toString(); },
@@ -16,6 +17,9 @@ var LogsViewModel = new function() {
 
   self.updating = false;
   self.update = function() {
+    if (self.paused())
+      return;
+
     PeerCast.getLogSettings(function(result) {
       if (result) {
         self.updating = true;
