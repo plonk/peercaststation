@@ -159,6 +159,10 @@ ul.relayTree {
   margin-bottom:10px;
 }
 
+.ui-control input[type=text], .ui-control select {
+  vertical-align: baseline;
+}
+
 .ui-row {
   display:table-row;
 }
@@ -312,4 +316,3 @@ ul.relayTree {
 .hidden {
   display:none;
 }
-
