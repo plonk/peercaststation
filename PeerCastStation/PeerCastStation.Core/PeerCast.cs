@@ -138,6 +138,8 @@ namespace PeerCastStation.Core
     /// </summary>
     public AccessController AccessController { get; set; }
 
+    public IPAddressMatcher PrivilegedNetworks { get; set; }
+
     /// <summary>
     /// チャンネルIDを指定してチャンネルのリレーを開始します。
     /// 接続先はYellowPageに問い合わせ取得します。
@@ -341,6 +343,7 @@ namespace PeerCastStation.Core
       this.SourceStreamFactories = new List<ISourceStreamFactory>();
       this.OutputStreamFactories = new List<IOutputStreamFactory>();
       this.ContentReaderFactories = new List<IContentReaderFactory>();
+      this.PrivilegedNetworks = new IPAddressMatcher("");
       StartMonitor();
     }
 

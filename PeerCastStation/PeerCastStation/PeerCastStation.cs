@@ -139,6 +139,9 @@ namespace PeerCastStation.Main
         s.Import(PeerCastStation.Properties.Settings.Default);
       }
       try {
+        if (s.PrivilegedNetworks != null) {
+          peerCast.PrivilegedNetworks = new IPAddressMatcher(s.PrivilegedNetworks);
+        }
         if (s.Logger!=null) {
           Logger.Level        = s.Logger.Level;
           Logger.LogFileName  = s.Logger.LogFileName;
@@ -215,6 +218,7 @@ namespace PeerCastStation.Main
     public override void SaveSettings()
     {
       var s = settings.Get<PeerCastStationSettings>();
+      s.PrivilegedNetworks = peerCast.PrivilegedNetworks.ToString();
       s.Logger = new PeerCastStationSettings.LoggerSettings {
         Level        = Logger.Level,
         LogFileName  = Logger.LogFileName,

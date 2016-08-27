@@ -178,12 +178,17 @@ namespace PeerCastStation.Core
           remote_endpoint.Address.Equals(IPAddress.IPv6Loopback)) {
         return this.LoopbackAccessControlInfo;
       }
-      else if (remote_endpoint.Address.IsSiteLocal()) {
+      else if (remote_endpoint.Address.IsSiteLocal() || IsPrivileged(remote_endpoint.Address)) {
         return this.LocalAccessControlInfo;
       }
       else {
         return this.GlobalAccessControlInfo;
       }
+    }
+
+    private bool IsPrivileged(IPAddress addr)
+    {
+      return PeerCast.PrivilegedNetworks.Match(addr);
     }
 
     private Task StartListen(TcpListener server, CancellationToken cancel_token)

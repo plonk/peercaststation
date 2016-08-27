@@ -346,6 +346,8 @@ namespace PeerCastStation.UI.HTTP
           portMapper["enabled"] = port_mapper.Enabled;
           res["portMapper"] = portMapper;
         }
+        var privilegedNetworks = PeerCast.PrivilegedNetworks != null ? PeerCast.PrivilegedNetworks.ToString() : "";
+        res["privilegedNetworks"] = privilegedNetworks;
         return res;
       }
 
@@ -369,6 +371,9 @@ namespace PeerCastStation.UI.HTTP
             mapper.TryGetThen("enabled", v => port_mapper.Enabled = v);
             port_mapper.DiscoverAsync();
           }
+        });
+        settings.TryGetThen("privilegedNetworks", v => {
+          PeerCast.PrivilegedNetworks = new IPAddressMatcher(v);
         });
         owner.Application.SaveSettings();
       }

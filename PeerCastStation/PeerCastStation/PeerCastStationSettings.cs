@@ -109,6 +109,7 @@ namespace PeerCastStation
     }
 
     public Guid BroadcastID { get; set; }
+    public String PrivilegedNetworks { get; set; }
     public LoggerSettings           Logger           { get; set; }
     public ListenerSettings[]       Listeners        { get; set; }
     public AccessControllerSettings AccessController { get; set; }
@@ -120,6 +121,7 @@ namespace PeerCastStation
       Listeners        = new ListenerSettings[0];
       AccessController = new AccessControllerSettings();
       YellowPages      = new YellowPageSettings[0];
+      PrivilegedNetworks = "";
     }
 
     internal void Import(PeerCastStation.Properties.Settings settings)
