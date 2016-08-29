@@ -32,7 +32,7 @@
   </head>
   <body>
     <div id="header">
-      <div class="alerts" data-bind="template: { name: 'alert', foreach: alerts }"></div>
+      <div class="alerts" data-bind="template: { name: 'alert', foreach: alerts, afterAdd: UIViewModel.postProcessAlerts }"></div>
       <div class="navbar">
         <div class="navbar-inner">
           <div class="container-fluid">

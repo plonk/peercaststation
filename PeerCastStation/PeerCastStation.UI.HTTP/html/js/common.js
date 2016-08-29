@@ -36,6 +36,15 @@ var UIViewModel = new function() {
     });
   };
 
+  self.postProcessAlerts = function (element) {
+    if (element.tagName == "DIV") {
+      callback = function() {
+        $(element).alert('close');
+      };
+      setTimeout(callback,10 * 1000);
+    }
+  };
+
   self.bind = function (target) {
     ko.applyBindings(self, target);
   }
