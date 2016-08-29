@@ -292,7 +292,27 @@ var SettingsViewModel = new function() {
       },
       privilegedNetworks: self.privilegedNetworks()
     };
-    PeerCast.setSettings(settings);
+    PeerCast.setSettings(settings, function (result, error) {
+      if (error) {
+        UIViewModel.alerts.push({
+          title:   "エラー",
+          message: "設定を適用できません。(" + error.message + ")",
+          type:    "error",
+          clicked: function () {},
+          close: function () {},
+          alert: "alert-error"
+        });
+      } else {
+        UIViewModel.alerts.push({
+          title:   "情報",
+          message: "設定を適用しました。",
+          type:    "info",
+          clicked: function () {},
+          close: function () {},
+          alert: "alert-info"
+        });
+      }
+    });
   };
 
   self.addYellowPage = function() {
