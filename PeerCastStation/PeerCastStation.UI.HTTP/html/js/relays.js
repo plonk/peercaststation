@@ -275,9 +275,19 @@ var BroadcastDialog = new function() {
         contentReader,
         info,
         track,
-        function() {
+        function(result, error) {
           refresh();
           dialog.modal('hide');
+          if (error) {
+            UIViewModel.alerts.push({
+              title:   "エラー",
+              message: "チャンネルを作成できませんでした。(" + error.message + ")",
+              type:    "error",
+              clicked: function () {},
+              close: function () {},
+              alert: "alert-error"
+            });
+          }
         });
     PeerCast.addBroadcastHistory({
       yellowPage:  self.yellowPage() ? self.yellowPage().name : null,
