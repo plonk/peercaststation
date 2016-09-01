@@ -82,11 +82,11 @@ namespace PeerCastStation.UI.HTTP
       return newVersions;
     }
 
-    private List<NotificationMessage> notificationMessages = new List<NotificationMessage>();
+    private NotificationBuffer notificationBuffer = new NotificationBuffer(20);
     public void ShowNotificationMessage(NotificationMessage msg)
     {
-      lock (notificationMessages) {
-        notificationMessages.Add(msg);
+      lock (notificationBuffer) {
+        notificationBuffer.AddMessage(msg);
         if (msg is NewVersionNotificationMessage) {
           newVersions = ((NewVersionNotificationMessage)msg).VersionDescriptions;
         }
@@ -95,10 +95,15 @@ namespace PeerCastStation.UI.HTTP
 
     public IEnumerable<NotificationMessage> GetNotificationMessages()
     {
-      lock (notificationMessages) {
-        var result = notificationMessages.ToArray();
-        notificationMessages.Clear();
-        return result;
+      lock (notificationBuffer) {
+        return notificationBuffer.GetUnreadMessages();
+      }
+    }
+
+    public IEnumerable<NotificationMessage> GetAllNotificationMessages()
+    {
+      lock (notificationBuffer) {
+        return notificationBuffer.GetAllMessages();
       }
     }
 
@@ -1113,6 +1118,26 @@ namespace PeerCastStation.UI.HTTP
         );
       }
 
+      [RPCMethod("getAllNotificationMessages")]
+      public JArray GetAllNotificationMessages()
+      {
+        return new JArray(
+          owner.GetAllNotificationMessages().Select(msg => {
+            var obj = new JObject();
+            if (msg is NewVersionNotificationMessage) {
+              obj["class"] = "newversion";
+            }
+            else {
+              obj["class"] = msg.GetType().Name.ToLowerInvariant();
+            }
+            obj["type"]    = msg.Type.ToString().ToLowerInvariant();
+            obj["title"]   = msg.Title;
+            obj["message"] = msg.Message;
+            return obj;
+          })
+        );
+      }
+
       [RPCMethod("checkBandwidth")]
       public int? CheckBandWidth()
       {
@@ -1251,5 +1276,36 @@ namespace PeerCastStation.UI.HTTP
 
     }
 
+  }
+
+  internal class NotificationBuffer
+  {
+    public NotificationBuffer(int capacity)
+    {
+      buffer = new Ringbuffer< Tuple<DateTime,NotificationMessage> >(capacity);
+      lastRead = DateTime.Now;
+      logger = new Logger(this.GetType());
+    }
+
+    public IEnumerable<NotificationMessage> GetUnreadMessages()
+    {
+      var messages = buffer.Where(pair => pair.Item1 > lastRead).Select(pair => pair.Item2).ToArray();
+      lastRead = DateTime.Now;
+      return messages;
+    }
+
+    public void AddMessage(NotificationMessage msg)
+    {
+      buffer.Add(Tuple.Create(DateTime.Now, msg));
+    }
+
+    public IEnumerable<NotificationMessage> GetAllMessages()
+    {
+      return buffer.Select(pair => pair.Item2);
+    }
+
+    private Ringbuffer< Tuple<DateTime,NotificationMessage> > buffer;
+    private DateTime lastRead;
+    private Logger logger;
   }
 }
