@@ -366,18 +366,12 @@ namespace PeerCastStation.Core
 		}
 
     private AutoResetEvent stoppedEvent = new AutoResetEvent(false);
-    private bool isStopping = false;
     private RegisteredWaitHandle monitorThreadPool = null;
     private void StartMonitor()
     {
       monitorThreadPool = ThreadPool.RegisterWaitForSingleObject(stoppedEvent, (state,timed_out) => {
         if (!timed_out) {
-          if (isStopping) {
-            monitorThreadPool.Unregister(stoppedEvent);
-            logger.Debug("Channel monitors stopped");
-          } else {
-            logger.Debug("stoppedEvent seems to have been fired but isStopping == false; ignoring");
-          }
+          monitorThreadPool.Unregister(stoppedEvent);
         }
         else {
           foreach (var monitor in ChannelMonitors) {
@@ -385,16 +379,6 @@ namespace PeerCastStation.Core
           }
         }
       }, null, 5000, false);
-    }
-
-    private void StopMonitor()
-    {
-      if (!(isStopping == false)) {
-        logger.Debug("StopMonitor: Assertion isStopping == false failed");
-      }
-      logger.Debug("Stopping channel monitors");
-      isStopping = true;
-      stoppedEvent.Set();
     }
 
     private IPAddress GetLocalAddress(AddressFamily addr_family)
@@ -575,7 +559,7 @@ namespace PeerCastStation.Core
     public void Stop()
     {
       logger.Info("Stopping PeerCast");
-      StopMonitor();
+      stoppedEvent.Set();
       foreach (var listener in outputListeners) {
         listener.Stop();
       }
