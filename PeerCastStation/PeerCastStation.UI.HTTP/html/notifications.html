@@ -57,9 +57,12 @@
         <h1>通知</h1>
         <table class="table">
           <tbody data-bind="foreach: alerts">
-            <tr>
-              <td data-bind="text:title"></td>
-              <td data-bind="text:message"></td>
+            <tr data-bind="css: { lead: $index() == 0,
+                           'text-info': type == 'info',
+                           'text-warning': type == 'warning',
+                           'text-danger': type == 'error' }">
+              <td data-bind="text: title"></td>
+              <td data-bind="text: message"></td>
             </tr>
           </tbody>
         </table>
