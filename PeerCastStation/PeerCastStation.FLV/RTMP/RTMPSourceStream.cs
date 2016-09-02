@@ -198,6 +198,11 @@ namespace PeerCastStation.FLV.RTMP
         DoStop (StopReason.BadAgentError);
         this.state = ConnectionState.Error;
       }
+      catch (InvalidDataException e) {
+        Logger.Error(e);
+        DoStop(StopReason.BadAgentError);
+        this.state = ConnectionState.Error;
+      }
       SyncContext.ProcessAll();
       OnStopped();
     }
