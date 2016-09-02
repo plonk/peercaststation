@@ -58,14 +58,6 @@ namespace PeerCastStation.FLV.RTMP
       {
       }
     }
-    private class ProtocolViolationException
-      : ApplicationException
-    {
-      public ProtocolViolationException(string message)
-        : base(message)
-      {
-      }
-    }
     private TcpClient client;
     private FLVContentBuffer flvBuffer;
     private bool useContentBitrate;
@@ -192,11 +184,6 @@ namespace PeerCastStation.FLV.RTMP
       }
       catch (ConnectionStoppedExcception) {
         this.state = ConnectionState.Closed;
-      }
-      catch (ProtocolViolationException e) {
-        Logger.Error (e);
-        DoStop (StopReason.BadAgentError);
-        this.state = ConnectionState.Error;
       }
       catch (InvalidDataException e) {
         Logger.Error(e);
@@ -399,7 +386,7 @@ namespace PeerCastStation.FLV.RTMP
           var err_msg = String.Format ("first chunk must be of type 0 (got type {0} chunk in chunk stream {1})",
                           chunk_type,
                           chunk_stream_id);
-          throw new ProtocolViolationException (err_msg);
+          throw new InvalidDataException(err_msg);
         }
       }
       switch (chunk_type) {
