@@ -22,10 +22,36 @@ namespace PeerCastStation
       this.messageExpireTimer.Start();
       this.app.PeerCast.ChannelAdded   += (sender, args) => {
         args.Channel.Closed += OnChannelClosed;
+        args.Channel.ChannelInfoChanged += OnChannelInfoChanged;
       };
       this.app.PeerCast.ChannelRemoved += (sender, args) => {
         args.Channel.Closed -= OnChannelClosed;
+        args.Channel.ChannelInfoChanged -= OnChannelInfoChanged;
       };
+    }
+
+    private void OnChannelInfoChanged(object sender, ChannelInfoChangedEventArgs args)
+    {
+      if (args.OldValue.Comment == args.NewValue.Comment)
+        return;
+
+      var comment = args.NewValue.Comment;
+
+      if (String.IsNullOrWhiteSpace(comment))
+        return;
+
+      var name = args.NewValue.Name ?? "(null)";
+      String title;
+      if ((sender as Channel).IsBroadcasting) {
+        title = $"{name}でメッセージを送信";
+      }
+      else {
+        title = $"{name}からのメッセージ";
+      }
+      var text = $"「{comment}」";
+
+      var msg = new NotificationMessage(title, text, NotificationMessageType.Info);
+      NotifyMessage(msg);
     }
 
     public void OnChannelClosed(object sender, StreamStoppedEventArgs args)

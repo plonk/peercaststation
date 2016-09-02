@@ -42,6 +42,20 @@ namespace PeerCastStation.Core
     Relays = 4,
   }
 
+  public class ChannelInfoChangedEventArgs
+    : EventArgs
+  {
+    public ChannelInfo OldValue { get; private set; }
+    public ChannelInfo NewValue { get; private set; }
+
+    public ChannelInfoChangedEventArgs(ChannelInfo old_value, ChannelInfo new_value)
+    {
+      OldValue = old_value;
+      NewValue = new_value;
+    }
+  }
+  public delegate void ChannelInfoChangedEventHandler(object sender, ChannelInfoChangedEventArgs args);
+
   /// <summary>
   /// チャンネル接続を管理するクラスです
   /// </summary>
@@ -198,7 +212,8 @@ namespace PeerCastStation.Core
       return WriteLock(() => streamID++);
     }
 
-    public event EventHandler ChannelInfoChanged;
+
+    public event ChannelInfoChangedEventHandler ChannelInfoChanged;
     private ChannelInfo channelInfo = new ChannelInfo(new AtomCollection());
     /// <summary>
     /// チャンネル情報を取得および設定します
@@ -208,8 +223,10 @@ namespace PeerCastStation.Core
         return ReadLock(() => channelInfo);
       }
       set {
+        ChannelInfo old_value = null;
         if (WriteLock(() => {
           if (channelInfo!=value) {
+            old_value = channelInfo;
             channelInfo = value;
             return true;
           }
@@ -218,7 +235,8 @@ namespace PeerCastStation.Core
           }
         })) {
           var events = ChannelInfoChanged;
-          if (events!=null) events(this, new EventArgs());
+          if (events!=null)
+            events(this, new ChannelInfoChangedEventArgs(old_value, value));
         }
       }
     }
