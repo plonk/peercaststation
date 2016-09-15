@@ -128,6 +128,7 @@ namespace PeerCastStation.FLV.RTMP
       TcpClient client = null;
       var bind_addr = GetBindAddresses(source);
       if (bind_addr.Count()==0) {
+        this.state = ConnectionState.Error;
         throw new BindErrorException(String.Format("Cannot resolve bind address: {0}", source.DnsSafeHost));
       }
       var listeners = bind_addr.Select(addr => new TcpListener(addr)).ToArray();
@@ -152,6 +153,7 @@ namespace PeerCastStation.FLV.RTMP
         Logger.Debug("Client accepted");
       }
       catch (SocketException) {
+        this.state = ConnectionState.Error;
         throw new BindErrorException(String.Format("Cannot bind address: {0}", bind_addr));
       }
       finally {
@@ -832,7 +834,7 @@ namespace PeerCastStation.FLV.RTMP
         Stop(reason);
         break;
       default:
-        Reconnect();
+        Task.Delay(3000).ContinueWith(prev => Reconnect());
         break;
       }
     }
