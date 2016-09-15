@@ -134,14 +134,22 @@ namespace PeerCastStation.FLV.RTMP
       try {
         var tasks = listeners.Select(listener => {
           listener.Start(1);
-          Logger.Debug("Listening on {0}", listener.LocalEndpoint);
+          Logger.Info("Listening on {0}", listener.LocalEndpoint);
           return listener.AcceptTcpClientAsync();
-        }).ToArray();
-        var result = await Task.WhenAny(tasks);
-        if (!result.IsCanceled) {
-          client = result.Result;
-          Logger.Debug("Client accepted");
+        }).ToList<Task>();
+
+        var cancelTsc = new TaskCompletionSource<bool>();
+        Task<TcpClient> result;
+        using (cancellationToken.Register(() => cancelTsc.TrySetResult(true))) {
+          tasks.Add(cancelTsc.Task);
+          var finishedTask = await Task.WhenAny(tasks);
+          if (finishedTask == cancelTsc.Task)
+            throw new OperationCanceledException(cancellationToken);
+          result = (Task<TcpClient>)finishedTask;
         }
+
+        client = result.Result;
+        Logger.Debug("Client accepted");
       }
       catch (SocketException) {
         throw new BindErrorException(String.Format("Cannot bind address: {0}", bind_addr));
