@@ -135,22 +135,14 @@ namespace PeerCastStation.FLV.RTMP
       try {
         var tasks = listeners.Select(listener => {
           listener.Start(1);
-          Logger.Info("Listening on {0}", listener.LocalEndpoint);
+          Logger.Debug("Listening on {0}", listener.LocalEndpoint);
           return listener.AcceptTcpClientAsync();
-        }).ToList<Task>();
-
-        var cancelTsc = new TaskCompletionSource<bool>();
-        Task<TcpClient> result;
-        using (cancellationToken.Register(() => cancelTsc.TrySetResult(true))) {
-          tasks.Add(cancelTsc.Task);
-          var finishedTask = await Task.WhenAny(tasks);
-          if (finishedTask == cancelTsc.Task)
-            throw new OperationCanceledException(cancellationToken);
-          result = (Task<TcpClient>)finishedTask;
+        }).ToArray();
+        var result = await Task.WhenAny(tasks);
+        if (!result.IsCanceled) {
+          client = result.Result;
+          Logger.Debug("Client accepted");
         }
-
-        client = result.Result;
-        Logger.Debug("Client accepted");
       }
       catch (SocketException) {
         this.state = ConnectionState.Error;
