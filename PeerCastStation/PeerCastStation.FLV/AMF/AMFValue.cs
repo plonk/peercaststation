@@ -299,8 +299,7 @@ namespace PeerCastStation.FLV.AMF
 
     public bool Equals(AMFValue obj)
     {
-      if (obj==null) return false;
-      if (obj.Type!=this.Type) return false;
+      if (obj.Type!=obj.Type) return false;
       switch (obj.Type) {
       case AMFValueType.Null:
       case AMFValueType.Undefined:
@@ -313,7 +312,6 @@ namespace PeerCastStation.FLV.AMF
 
     public override bool Equals(object obj)
     {
-      if (obj==null) return false;
       if (obj.GetType()!=this.GetType()) return false;
       return Equals((AMFValue)obj);
     }
