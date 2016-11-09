@@ -133,15 +133,19 @@ namespace PeerCastStation.FLV.RTMP
       }
       var listeners = bind_addr.Select(addr => new TcpListener(addr)).ToArray();
       try {
+        var cancel_task = cancellationToken.CreateCancelTask<TcpClient>();
         var tasks = listeners.Select(listener => {
           listener.Start(1);
           Logger.Debug("Listening on {0}", listener.LocalEndpoint);
           return listener.AcceptTcpClientAsync();
-        }).ToArray();
+        }).Concat(Enumerable.Repeat(cancel_task, 1)).ToArray();
         var result = await Task.WhenAny(tasks);
         if (!result.IsCanceled) {
           client = result.Result;
           Logger.Debug("Client accepted");
+        }
+        else {
+          Logger.Debug("Listen cancelled");
         }
       }
       catch (SocketException) {
@@ -287,6 +291,8 @@ namespace PeerCastStation.FLV.RTMP
       public int  ReceivedLength       { get; set; }
       public byte[] Body               { get; set; }
 
+      public static readonly RTMPMessageBuilder NullPacket = new RTMPMessageBuilder(null, 0, 0, 0, 0);
+
       public RTMPMessageBuilder(
         RTMPMessageBuilder x,
         long timestamp,
@@ -367,7 +373,9 @@ namespace PeerCastStation.FLV.RTMP
 
       RTMPMessageBuilder msg = null;
       RTMPMessageBuilder last_msg = null;
-      lastMessages.TryGetValue(chunk_stream_id, out last_msg);
+      if (!lastMessages.TryGetValue(chunk_stream_id, out last_msg)) {
+        last_msg = RTMPMessageBuilder.NullPacket;
+      }
       switch ((basic_header & 0xC0)>>6) {
       case 0:
         using (var reader=new RTMPBinaryReader(await RecvStream(11, cancel_token))) {
