@@ -391,7 +391,7 @@ namespace PeerCastStation.PCP
 
     protected bool IsContentChanged()
     {
-      return changedEvent.WaitOne(1);
+      return changedEvent.WaitOne(0);
     }
 
     protected IEnumerable<Atom> CreateContentHeaderPacket(Channel channel, Content content)

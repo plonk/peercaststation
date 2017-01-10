@@ -122,7 +122,7 @@ namespace PeerCastStation.Core
       WaitHandle.WaitAny(new WaitHandle[] {
         Connection.ReceiveWaitHandle,
         SyncContext.EventHandle,
-      }, 10);
+      }, 30);
     }
 
     protected virtual void OnStarted()
