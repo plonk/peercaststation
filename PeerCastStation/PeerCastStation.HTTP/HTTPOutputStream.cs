@@ -48,7 +48,7 @@ namespace PeerCastStation.HTTP
     public HTTPRequest(IEnumerable<string> requests)
     {
       Headers = new Dictionary<string, string>();
-      string host = "localhost";
+      string host;
       string path = "/";
       foreach (var req in requests) {
         Match match = null;
@@ -60,7 +60,9 @@ namespace PeerCastStation.HTTP
         }
       }
       Uri uri;
-      Headers.TryGetValue("HOST", out host);
+      if (!Headers.TryGetValue("HOST", out host)) {
+        host = "localhost";
+      }
       if (Uri.TryCreate("http://" + host + path, UriKind.Absolute, out uri)) {
         this.Uri = uri;
       }
