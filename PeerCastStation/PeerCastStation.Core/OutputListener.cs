@@ -181,43 +181,49 @@ namespace PeerCastStation.Core
         out Guid channel_id,
         out AuthenticationKey auth_key)
     {
-      var output_factories = PeerCast.OutputStreamFactories.OrderBy(factory => factory.Priority);
-      header = new List<byte>();
-      channel_id = Guid.Empty;
-      auth_key = null;
-      bool eos = false;
-      while (!eos && header.Count<=4096) {
-        try {
-          do {
-            var val = stream.ReadByte();
-            if (val < 0) {
-              eos = true;
+      using (var cancel_source = new CancellationTokenSource(TimeSpan.FromMilliseconds(3000))) {
+        var cancel_token = cancel_source.Token;
+        cancel_token.Register(() => stream.Close());
+        var output_factories = PeerCast.OutputStreamFactories.OrderBy(factory => factory.Priority);
+        header = new List<byte>();
+        channel_id = Guid.Empty;
+        auth_key = null;
+        bool eos = false;
+        while (!eos && header.Count<=4096) {
+          try {
+            do {
+              var val = stream.ReadByte();
+              if (val < 0) {
+                eos = true;
+              } else {
+                header.Add((byte)val);
+              }
+            } while (stream.DataAvailable);
+          } catch (System.IO.IOException) {
+            // ReadByteのブロック中にストリームがクローズされた場合。
+            break;
+          } catch (System.ObjectDisposedException) {
+            // ReadByteの実行前にストリームがクローズされた場合。
+            break;
+          }
+          var header_ary = header.ToArray();
+          foreach (var factory in output_factories) {
+            if (remote_type==RemoteType.SiteLocal && (factory.OutputStreamType & this.LocalOutputAccepts)==0) continue;
+            if (remote_type==RemoteType.Global    && (factory.OutputStreamType & this.GlobalOutputAccepts)==0) continue;
+            var cid = factory.ParseChannelID(header_ary);
+            if (cid.HasValue) {
+              channel_id = cid.Value;
+              switch (remote_type) {
+              case RemoteType.Loopback: auth_key = null; break;
+              case RemoteType.SiteLocal: auth_key = LocalAuthorizationRequired ? AuthenticationKey : null; break;
+              case RemoteType.Global: auth_key = GlobalAuthorizationRequired ? AuthenticationKey : null; break;
+              }
+              return factory;
             }
-            else {
-              header.Add((byte)val);
-            }
-          } while (stream.DataAvailable);
-        }
-        catch (System.IO.IOException) {
-          eos = true;
-        }
-        var header_ary = header.ToArray();
-        foreach (var factory in output_factories) {
-          if (remote_type==RemoteType.SiteLocal && (factory.OutputStreamType & this.LocalOutputAccepts )==0) continue;
-          if (remote_type==RemoteType.Global    && (factory.OutputStreamType & this.GlobalOutputAccepts)==0) continue;
-          var cid = factory.ParseChannelID(header_ary);
-          if (cid.HasValue) {
-            channel_id = cid.Value;
-            switch (remote_type) {
-            case RemoteType.Loopback:  auth_key = null; break;
-            case RemoteType.SiteLocal: auth_key = LocalAuthorizationRequired  ? AuthenticationKey : null; break;
-            case RemoteType.Global:    auth_key = GlobalAuthorizationRequired ? AuthenticationKey : null; break;
-            }
-            return factory;
           }
         }
+        return null;
       }
-      return null;
     }
 
     private static List<Thread> outputThreads = new List<Thread>();
