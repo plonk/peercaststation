@@ -2,7 +2,7 @@
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{3D030F73-33A1-4FEF-9A3F-D8CD34FC63A2}</ProjectGuid>
@@ -113,10 +113,6 @@
     <ProjectReference Include="..\PeerCastStation.Updater\PeerCastStation.Updater.csproj">
       <Project>{be5fd77b-d20e-40f6-b198-c7fd97e41274}</Project>
       <Name>PeerCastStation.Updater</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PeerCastStation.WPF\PeerCastStation.WPF.csproj">
-      <Project>{5ea68141-ac06-428b-9526-a6835e0cc2b2}</Project>
-      <Name>PeerCastStation.WPF</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
