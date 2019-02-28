@@ -350,7 +350,9 @@ var SettingsViewModel = new function() {
         enabled:       self.portMapperEnabled()
       }
     };
-    PeerCast.setSettings(settings);
+    PeerCast.setSettings(settings, function(res, err) {
+      self.update();
+    });
   };
   $.each([
     UserConfig.defaultPlayProtocol,
