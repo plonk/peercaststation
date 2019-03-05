@@ -22,7 +22,7 @@ Windowsではインストーラ版がおすすめです。必要なバージョ�
 
 Windows以外の場合はmonoをインストールしてください。
 Linuxなどではパッケージマネージャにあればそこから入れてください。
-OSXなどでは[mono-projectからダウンロードして](http://www.go-mono.com/mono-downloads/download.html)インストールします(なるべく新しいのを推奨します)。あとはPeerCastStationのzipを適当な場所に展開して、ターミナルから
+OS Xなどでは[mono-projectからダウンロードして](http://www.go-mono.com/mono-downloads/download.html)インストールします(なるべく新しいのを推奨します)。あとはPeerCastStationのzipを適当な場所に展開して、ターミナルから
 
     mono PeerCastStation.exe
 
