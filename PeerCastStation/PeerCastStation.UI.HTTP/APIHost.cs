@@ -963,8 +963,7 @@ namespace PeerCastStation.UI.HTTP
         switch (listener.LocalEndPoint.AddressFamily) {
         case System.Net.Sockets.AddressFamily.InterNetwork:
           if ((listener.GlobalOutputAccepts & OutputStreamType.Relay)!=0 && owner.OpenedPortsV4!=null) {
-            res["isOpened"] = (listener.GlobalOutputAccepts & OutputStreamType.Relay)!=0 &&
-                              owner.OpenedPortsV4.Contains(listener.LocalEndPoint.Port);
+            res["isOpened"] = owner.OpenedPortsV4.Contains(listener.LocalEndPoint.Port);
           }
           else {
             res["isOpened"] = null;
@@ -972,8 +971,7 @@ namespace PeerCastStation.UI.HTTP
           break;
         case System.Net.Sockets.AddressFamily.InterNetworkV6:
           if ((listener.GlobalOutputAccepts & OutputStreamType.Relay)!=0 && owner.OpenedPortsV6!=null) {
-            res["isOpened"] = (listener.GlobalOutputAccepts & OutputStreamType.Relay)!=0 &&
-                              owner.OpenedPortsV6.Contains(listener.LocalEndPoint.Port);
+            res["isOpened"] = owner.OpenedPortsV6.Contains(listener.LocalEndPoint.Port);
           }
           else {
             res["isOpened"] = null;
