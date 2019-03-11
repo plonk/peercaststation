@@ -1014,6 +1014,11 @@ namespace PeerCastStation.UI.HTTP
         listener.LocalAuthorizationRequired  = localAuthorizationRequired;
         listener.GlobalAuthorizationRequired = globalAuthorizationRequired;
         owner.SaveSettings();
+
+        //if (listener.LocalEndPoint.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+        //  owner.OpenedPortsV4 = null;
+        //if (listener.LocalEndPoint.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+          //owner.OpenedPortsV6 = null;
         return GetListener(listener);
       }
 
