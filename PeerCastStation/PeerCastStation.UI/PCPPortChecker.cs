@@ -153,6 +153,9 @@ namespace PeerCastStation.UI
             new int[0],
             stopwatch.Elapsed);
       }
+      finally {
+        cancel.Dispose();
+      }
     }
   }
 
