@@ -154,18 +154,20 @@ ul.relayTree {
 }
 
 .ui-header {
-  padding:0px 2px 0px 4px;
+  padding:0px 6px 0px 12px;
   display:table-cell;
   font-weight:800;
+  white-space: nowrap;
 }
 
 .ui-label {
-  padding:0px 2px 0px 4px;
+  padding:0px 6px 0px 12px;
   display:table-cell;
   text-align:right;
 }
 
 .ui-control {
+  padding:0px 6px 0px 12px;
   width:auto;
   display:table-cell;
 }
@@ -328,3 +330,16 @@ ul.relayTree {
   display:none;
 }
 
+.input-numeric {
+  text-align: right;
+}
+
+.control-label {
+  font-weight: 800;
+}
+
+form h3 {
+  font-size: 20px;
+  font-weight: normal;
+  border-bottom: solid 1px #eee;
+}
