@@ -12,7 +12,7 @@ namespace PeerCastStation.GUI
       IUserInterfacePlugin
   {
     override public string Name { get { return "GUI by Windows.Forms"; } }
-    public override bool IsUsable { get { return false; } }
+    public override bool IsUsable { get { return true; } }
 
     MainForm mainForm;
     Thread mainThread;
