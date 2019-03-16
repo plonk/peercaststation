@@ -292,8 +292,8 @@ namespace PeerCastStation.GUI
     {
       peerCast.AccessController.MaxRelays           = (int)maxRelays.Value;
       peerCast.AccessController.MaxPlays            = (int)maxDirects.Value;
-      peerCast.AccessController.MaxRelaysPerChannel = (int)maxRelaysPerChannel.Value;
-      peerCast.AccessController.MaxPlaysPerChannel  = (int)maxDirectsPerChannel.Value;
+      peerCast.AccessController.MaxRelaysPerRelayChannel = (int)maxRelaysPerChannel.Value;
+      peerCast.AccessController.MaxPlaysPerRelayChannel  = (int)maxDirectsPerChannel.Value;
       peerCast.AccessController.MaxUpstreamRate     = (int)maxUpstreamRate.Value;
       ChannelCleaner.InactiveLimit  = (int)(inactiveChannelLimit.Value * 60000);
       ChannelCleaner.Mode = (ChannelCleaner.CleanupMode)(channelCleanupMode.SelectedIndex>=0 ? channelCleanupMode.SelectedIndex : 0);
@@ -759,7 +759,7 @@ namespace PeerCastStation.GUI
       public override string ToString()
       {
         var yp = announcingChannel.YellowPage;
-        var info = yp.GetConnectionInfo();
+        var info = announcingChannel.GetConnectionInfo();
         var status = "　";
         if ((info.RemoteHostStatus & RemoteHostStatus.Root)!=0) {
           status = "Ｒ";
@@ -786,7 +786,7 @@ namespace PeerCastStation.GUI
       connectionList.Items.Clear();
       connectionList.Items.Add(new ChannelConnectionSourceItem(channel.SourceStream));
       var announcings = peerCast.YellowPages
-        .Select(yp => yp.AnnouncingChannels.FirstOrDefault(c => c.Channel.ChannelID==channel.ChannelID))
+        .Select(yp => yp.GetAnnouncingChannels().FirstOrDefault(c => c.Channel.ChannelID==channel.ChannelID))
         .Where(c => c!=null);
       foreach (var announcing in announcings.ToArray()) {
         connectionList.Items.Add(new ChannelConnectionAnnouncingItem(announcing));
@@ -886,6 +886,7 @@ namespace PeerCastStation.GUI
       if (dlg.ShowDialog(this)==DialogResult.OK) {
         var channel_id = BroadcastChannel.CreateChannelID(
           peerCast.BroadcastID,
+          NetworkType.IPv4,
           dlg.ChannelInfo.Name,
           dlg.ChannelInfo.Genre,
           dlg.StreamSource.ToString());
@@ -894,6 +895,7 @@ namespace PeerCastStation.GUI
           .FirstOrDefault(factory => factory.Scheme==dlg.StreamSource.Scheme);
         if (source_stream_factory!=null) {
           var channel = peerCast.BroadcastChannel(
+            NetworkType.IPv4,
             dlg.YellowPage,
             channel_id,
             dlg.ChannelInfo,
@@ -968,8 +970,8 @@ namespace PeerCastStation.GUI
       if (mainTab.SelectedTab==tabSettings) {
         maxRelays.Value            = peerCast.AccessController.MaxRelays;
         maxDirects.Value           = peerCast.AccessController.MaxPlays;
-        maxRelaysPerChannel.Value  = peerCast.AccessController.MaxRelaysPerChannel;
-        maxDirectsPerChannel.Value = peerCast.AccessController.MaxPlaysPerChannel;
+        maxRelaysPerChannel.Value  = peerCast.AccessController.MaxRelaysPerRelayChannel;
+        maxDirectsPerChannel.Value = peerCast.AccessController.MaxPlaysPerRelayChannel;
         maxUpstreamRate.Value      = peerCast.AccessController.MaxUpstreamRate;
         inactiveChannelLimit.Value  = ChannelCleaner.InactiveLimit / 60000;
         channelCleanupMode.SelectedIndex = (int)ChannelCleaner.Mode;
