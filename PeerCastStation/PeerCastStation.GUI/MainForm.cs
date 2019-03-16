@@ -55,6 +55,7 @@ namespace PeerCastStation.GUI
       }
       var settings = application.Settings.Get<GUISettings>();
       this.Visible = settings.ShowWindowOnStartup;
+      this.Text = peerCast.AgentName;
     }
 
     public void ShowNotificationMessage(NotificationMessage message)
