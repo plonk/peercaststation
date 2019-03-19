@@ -375,7 +375,7 @@ namespace PeerCastStation.GUI
       // label25
       // 
       label25.AutoSize = true;
-      label25.Location = new System.Drawing.Point(0, 121);
+      label25.Location = new System.Drawing.Point(4, 121);
       label25.Name = "label25";
       label25.Size = new System.Drawing.Size(76, 12);
       label25.TabIndex = 28;
