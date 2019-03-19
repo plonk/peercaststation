@@ -41,7 +41,7 @@ namespace PeerCastStation.GUI
       InitializeComponent();
       application = app;
       peerCast = app.PeerCast;
-      if (PlatformID.Win32NT==Environment.OSVersion.Platform) {
+      if (isTrayIconEnabled()) {
         notifyIcon = new NotifyIcon(this.components);
         notifyIcon.Icon = this.Icon;
         notifyIcon.ContextMenuStrip = notifyIconMenu;
@@ -55,8 +55,17 @@ namespace PeerCastStation.GUI
         versionChecker.CheckVersion();
       }
       var settings = application.Settings.Get<GUISettings>();
-      this.Visible = settings.ShowWindowOnStartup;
+      this.Visible = settings.ShowWindowOnStartup || !isTrayIconEnabled();
       this.Text = peerCast.AgentName;
+      
+      // ウィンドウの右クリックでタスクトレイアイコンのメニューを出す。
+      if (!isTrayIconEnabled()) {
+        this.ContextMenuStrip = notifyIconMenu;
+      }
+    }
+    
+    private bool isTrayIconEnabled() {
+      return Environment.OSVersion.Platform == PlatformID.Win32NT;
     }
 
     public void ShowNotificationMessage(NotificationMessage message)
@@ -316,7 +325,7 @@ namespace PeerCastStation.GUI
     private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
     {
       if (e.CloseReason==CloseReason.UserClosing &&
-          PlatformID.Win32NT==Environment.OSVersion.Platform) {
+          isTrayIconEnabled()) {
         e.Cancel = true;
         this.Hide();
       }
