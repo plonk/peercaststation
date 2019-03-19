@@ -164,7 +164,12 @@ namespace PeerCastStation.GUI
 
     void UpdateLogText()
     {
-      logText.Text = guiWriter.ToString();
+      // LogWriter.ToString を使うと RingBuffer.CopyTo のバグを踏んで落ちるので、自分で連結する。
+      var sb = new System.Text.StringBuilder();
+      foreach (var line in guiWriter.Lines) {
+        sb.AppendLine(line);
+      }
+      logText.Text = sb.ToString();
     }
 
     private class ChannelListItem
