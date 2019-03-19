@@ -18,7 +18,9 @@ namespace PeerCastStation.GUI
     Thread mainThread;
     override protected void OnStart()
     {
-      System.Windows.Forms.Application.EnableVisualStyles();
+      // VisualStylesを有効にするとなぜかフォームが閉じられる時に Application.ExitThread() でプログラムが終了しなくなる。
+      //System.Windows.Forms.Application.EnableVisualStyles();
+      
       mainThread = new Thread(() => {
         mainForm = new MainForm(Application);
         if (!mainForm.IsHandleCreated) {
