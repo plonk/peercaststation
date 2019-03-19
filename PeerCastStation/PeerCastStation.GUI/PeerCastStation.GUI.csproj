@@ -146,6 +146,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Compile Include="Polyfill.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PeerCastStation.ASF\PeerCastStation.ASF.csproj">

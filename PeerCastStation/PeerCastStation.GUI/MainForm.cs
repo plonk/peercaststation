@@ -22,6 +22,7 @@ using PeerCastStation.Core;
 using PeerCastStation.GUI.Properties;
 using System.Linq;
 using System.ComponentModel;
+using Polyfill;
 
 namespace PeerCastStation.GUI
 {
@@ -144,8 +145,8 @@ namespace PeerCastStation.GUI
     private bool updating = false;
     private void UpdateStatus()
     {
-      if (peerCast.IsFirewalled.HasValue) {
-        portOpenedLabel.Text = peerCast.IsFirewalled.Value ? "未開放" : "開放";
+      if (peerCast.IsFirewalled().HasValue) {
+        portOpenedLabel.Text = peerCast.IsFirewalled().Value ? "未開放" : "開放";
       }
       else {
         portOpenedLabel.Text = "開放状態不明";
@@ -199,7 +200,7 @@ namespace PeerCastStation.GUI
           if (Channel.LocalRelays>0) {
             relay_status = "○";
           }
-          else if (!Channel.PeerCast.IsFirewalled.HasValue || Channel.PeerCast.IsFirewalled.Value) {
+          else if (!Channel.PeerCast.IsFirewalled().HasValue || Channel.PeerCast.IsFirewalled().Value) {
             relay_status = "×";
           }
           else {
@@ -303,8 +304,8 @@ namespace PeerCastStation.GUI
       peerCast.AccessController.MaxUpstreamRate     = (int)maxUpstreamRate.Value;
       ChannelCleaner.InactiveLimit  = (int)(inactiveChannelLimit.Value * 60000);
       ChannelCleaner.Mode = (ChannelCleaner.CleanupMode)(channelCleanupMode.SelectedIndex>=0 ? channelCleanupMode.SelectedIndex : 0);
-      if (peerCast.IsFirewalled.HasValue) {
-        portOpenedLabel.Text = peerCast.IsFirewalled.Value ? "未開放" : "開放";
+      if (peerCast.IsFirewalled().HasValue) {
+        portOpenedLabel.Text = peerCast.IsFirewalled().Value ? "未開放" : "開放";
       }
       else {
         portOpenedLabel.Text = "開放状態不明";
