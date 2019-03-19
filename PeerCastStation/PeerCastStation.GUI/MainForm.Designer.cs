@@ -1065,7 +1065,7 @@ namespace PeerCastStation.GUI
       this.yellowPagesList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.yellowPagesList.FormattingEnabled = true;
-      this.yellowPagesList.ItemHeight = 12;
+      this.yellowPagesList.ItemHeight = 16;
       this.yellowPagesList.Location = new System.Drawing.Point(6, 18);
       this.yellowPagesList.Name = "yellowPagesList";
       this.yellowPagesList.Size = new System.Drawing.Size(335, 76);
@@ -1088,7 +1088,7 @@ namespace PeerCastStation.GUI
       // applySettings
       // 
       this.applySettings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.applySettings.Location = new System.Drawing.Point(347, 128);
+      this.applySettings.Location = new System.Drawing.Point(350, 145);
       this.applySettings.Name = "applySettings";
       this.applySettings.Size = new System.Drawing.Size(73, 26);
       this.applySettings.TabIndex = 54;
@@ -1120,7 +1120,7 @@ namespace PeerCastStation.GUI
       this.tableLayoutPanel3.Controls.Add(label1, 1, 0);
       this.tableLayoutPanel3.Controls.Add(this.channelCleanupMode, 1, 3);
       this.tableLayoutPanel3.Controls.Add(this.label7, 0, 3);
-      this.tableLayoutPanel3.Controls.Add(this.inactiveChannelLimit, 0, 4);
+      this.tableLayoutPanel3.Controls.Add(this.inactiveChannelLimit, 1, 4);
       this.tableLayoutPanel3.Controls.Add(this.label8, 0, 4);
       this.tableLayoutPanel3.Dock = System.Windows.Forms.DockStyle.Top;
       this.tableLayoutPanel3.Location = new System.Drawing.Point(3, 15);
@@ -1129,9 +1129,9 @@ namespace PeerCastStation.GUI
       this.tableLayoutPanel3.RowCount = 5;
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.Size = new System.Drawing.Size(423, 110);
       this.tableLayoutPanel3.TabIndex = 53;
       // 
@@ -1279,7 +1279,7 @@ namespace PeerCastStation.GUI
       this.portsList.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.portsList.FormattingEnabled = true;
-      this.portsList.ItemHeight = 12;
+      this.portsList.ItemHeight = 16;
       this.portsList.Location = new System.Drawing.Point(6, 18);
       this.portsList.Name = "portsList";
       this.portsList.Size = new System.Drawing.Size(335, 76);
