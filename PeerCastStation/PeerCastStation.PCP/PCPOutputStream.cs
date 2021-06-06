@@ -935,23 +935,125 @@ namespace PeerCastStation.PCP
 
   }
 
+  public class PCPGivOutputStreamFactory
+: OutputStreamFactoryBase
+  {
+    public override string Name {
+      get { return "PCPGiv"; }
+    }
+
+    public override OutputStreamType OutputStreamType {
+      get { return OutputStreamType.Relay; }
+    }
+
+    public PCPGivOutputStreamFactory(PeerCast peercast)
+      : base(peercast)
+    {
+    }
+
+    public override IOutputStream Create(
+      ConnectionStream connection,
+      AccessControlInfo access_control,
+      Guid channel_id)
+    {
+      return new PCPGivOutputStream();
+    }
+
+    static Regex GivRequestLineRegex = new Regex(@"\AGIV\s+/([0-9a-fA-F]{32})\z");
+    public override Guid? ParseChannelID(byte[] header)
+    {
+      var idx = Array.IndexOf(header, (byte)'\r');
+      if (idx<0 ||
+          !(idx == header.Length-4 &&
+          header[idx+1] == '\n' &&
+          header[idx+2] == '\r' &&
+          header[idx+3] == '\n'
+          )) {
+        return null;
+      }
+      string reqline;
+      try {
+        reqline = System.Text.Encoding.ASCII.GetString(header, 0, idx);
+      }
+      catch (ArgumentException) {
+        // header は文字列としてデコードできなかった。
+        return null;
+      }
+      var match = GivRequestLineRegex.Match(reqline);
+      if (match.Success) {
+        return Guid.Parse(match.Groups[1].Value);
+      }
+      else {
+        return null;
+      }
+    }
+  }
+
+  internal class PCPGivOutputStream : IOutputStream
+  {
+    public bool IsLocal {
+      get {
+        throw new NotImplementedException();
+      }
+    }
+
+    public int UpstreamRate {
+      get {
+        throw new NotImplementedException();
+      }
+    }
+
+    public OutputStreamType OutputStreamType {
+      get {
+        throw new NotImplementedException();
+      }
+    }
+
+    public ConnectionInfo GetConnectionInfo()
+    {
+      throw new NotImplementedException();
+    }
+
+    public void OnBroadcast(Host from, Atom packet)
+    {
+      throw new NotImplementedException();
+    }
+
+    public void OnStopped(StopReason reason)
+    {
+      throw new NotImplementedException();
+    }
+
+    public async Task<HandlerResult> Start(CancellationToken cancellationToken)
+    {
+      return HandlerResult.Close;
+    }
+  }
+
   [Plugin]
   class PCPOutputStreamPlugin
     : PluginBase
   {
     override public string Name { get { return "PCP Output"; } }
+    
+    private PCPGivOutputStreamFactory factory;
 
     private IDisposable appRegistration;
     override protected void OnAttach()
     {
       var owin = Application.Plugins.OfType<OwinHostPlugin>().FirstOrDefault();
       appRegistration = owin?.OwinHost?.Register(PCPRelayOwinApp.BuildApp);
+
+      if (factory==null) factory = new PCPGivOutputStreamFactory(Application.PeerCast);
+      Application.PeerCast.OutputStreamFactories.Add(factory);
     }
 
     override protected void OnDetach()
     {
       appRegistration?.Dispose();
       appRegistration = null;
+
+      Application.PeerCast.OutputStreamFactories.Remove(factory);
     }
 
   }

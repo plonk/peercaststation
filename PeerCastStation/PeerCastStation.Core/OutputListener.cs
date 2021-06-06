@@ -284,7 +284,7 @@ namespace PeerCastStation.Core
         stream.WriteTimeout = 3000;
         stream.ReadTimeout  = 3000;
         var handler = await CreateMatchedHandler(
-          client.Client,
+          client,
           stream,
           acinfo,
           cancellationToken).ConfigureAwait(false);
@@ -308,15 +308,15 @@ namespace PeerCastStation.Core
       catch (OperationCanceledException) {
       }
       finally {
-        client.Client.Shutdown(SocketShutdown.Send);
+        client.Client?.Shutdown(SocketShutdown.Send);
         logger.Debug("Closing client connection");
-        stream.Close();
-        client.Close();
+        //stream.Close();
+        //client.Close();
       }
     }
 
     private async Task<IOutputStream> CreateMatchedHandler(
-        Socket socket,
+        TcpClient client,
         NetworkStream stream,
         AccessControlInfo acinfo,
         CancellationToken cancellationToken)
@@ -336,8 +336,15 @@ namespace PeerCastStation.Core
             foreach (var factory in output_factories) {
               var channel_id = factory.ParseChannelID(header_ary, acinfo);
               if (channel_id.HasValue) {
-                var connection = new ConnectionStream(socket, stream, header_ary);
-                return factory.Create(connection, acinfo, channel_id.Value);
+                if (factory.Name == "PCPGiv") {
+                  PeerCast.AddGivSocket(channel_id.Value, client.Client.AddressFamily, client.Client);
+                  client.Client = null;
+                  return factory.Create(null, acinfo, channel_id.Value);
+                }
+                else {
+                  var connection = new ConnectionStream(client.Client, stream, header_ary);
+                  return factory.Create(connection, acinfo, channel_id.Value);
+                }
               }
             }
           }
@@ -347,6 +354,7 @@ namespace PeerCastStation.Core
         catch (IOException) {
         }
       }
+      logger.Debug("CreateMatchedHandle returning null");
       return null;
     }
 

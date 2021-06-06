@@ -1014,10 +1014,20 @@ namespace PeerCastStation.PCP
               helo.SetHeloAgent(PeerCast.AgentName);
               helo.SetHeloVersion(1218);
               helo.SetHeloSessionID(PeerCast.SessionID);
-              helo.SetHeloPort(0);
+              if (PeerCast.GetPortStatus(client.Client.AddressFamily) == PortStatus.Open) {
+                var localPort = PeerCast.GetLocalEndPoint(client.Client.AddressFamily, OutputStreamType.Relay).Port;
+                helo.SetHeloPort(localPort);
+              } else {
+                helo.SetHeloPort(0);
+              }
               AtomWriter.Write(stream, new Atom(Atom.PCP_HELO, helo));
               var hosts = ReadHosts(stream, channel_id);
-              res = HostToUri(hosts.FirstOrDefault(h => h.IsTracker), channel_id);
+              if (hosts.Count == 0) {
+                res = new Uri("giv://0.0.0.0/channel/" + channel_id.ToString("N"));
+              }
+              else {
+                res = HostToUri(hosts.FirstOrDefault(h => h.IsTracker), channel_id);
+              }
               break;
             case "200":
               //なぜかリレー可能だったのでYP自体をトラッカーとみなしてしまうことにする

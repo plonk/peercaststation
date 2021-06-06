@@ -63,6 +63,42 @@ namespace PeerCastStation.PCP
     }
   }
 
+  public class GivSourceStreamFactory
+  : SourceStreamFactoryBase
+  {
+    public GivSourceStreamFactory(PeerCast peercast)
+      : base(peercast)
+    {
+    }
+
+    public override string Name { get { return "giv"; } }
+    public override string Scheme { get { return "giv"; } }
+
+    public override SourceStreamType Type {
+      get { return SourceStreamType.Relay; }
+    }
+
+    public override Uri DefaultUri {
+      get { return null; }
+    }
+
+    public override bool IsContentReaderRequired {
+      get { return false; }
+    }
+
+    //ハンドシェイク終了まで一定時間で終わらなかったらタイムアウトする
+    //PeerCastのポート開放チェックが最悪15秒かかるのでそれより短くはしないこと
+    public int GivHandshakeTimeout { get; set; } = 18000;
+
+    public override ISourceStream Create(Channel channel, Uri tracker)
+    {
+      // Assert(tracker.Scheme == "giv");
+      var strm = new PCPSourceStream(PeerCast, channel, tracker);
+      strm.PCPHandshakeTimeout = GivHandshakeTimeout;
+      return strm;
+    }
+  }
+
   public class RelayRequestResponse
   {
     public int    StatusCode  { get; set; }
@@ -136,8 +172,9 @@ namespace PeerCastStation.PCP
       base.OnStopped();
     }
 
-    protected override async Task<SourceConnectionClient> DoConnect(Uri source, CancellationToken cancel_token)
+    protected async Task<SourceConnectionClient> DoConnectPcp(Uri source, CancellationToken cancel_token)
     {
+      Logger.Debug("DoConnectPcp");
       TcpClient client = null;
       try {
         var port = source.Port<0 ? PCPVersion.DefaultPort : source.Port;
@@ -184,6 +221,43 @@ namespace PeerCastStation.PCP
         return null;
       }
     }
+    protected async Task<SourceConnectionClient> DoConnectGiv(Uri source, CancellationToken cancel_token)
+    {
+      Logger.Debug("DoConnectGiv");
+      AddressFamily family = AddressFamily.InterNetwork;
+      if (source.HostNameType == UriHostNameType.IPv6) {
+        family = AddressFamily.InterNetworkV6;
+      }
+
+      Socket socket;
+      socket = PeerCast.ReceiveGivSocket(Guid.Parse(source.LocalPath.Substring("/channel/".Length)), family);
+      if (socket != null) {
+        var client = new TcpClient();
+        client.Client = socket;
+
+        var connection = new SourceConnectionClient(client);
+        connection.Stream.ReadTimeout  = 30000;
+        connection.Stream.WriteTimeout = 8000;
+
+        remoteHost = socket.RemoteEndPoint;
+
+        this.client = client;
+
+        return connection;
+      } else {
+        return null;
+      }
+    }
+
+    protected override async Task<SourceConnectionClient> DoConnect(Uri source, CancellationToken cancel_token)
+    {
+      if (source.Scheme == "pcp")
+        return await DoConnectPcp(source, cancel_token);
+      else if (source.Scheme == "giv")
+        return await DoConnectGiv(source, cancel_token);
+      else
+        throw new FormatException($"Unsupported scheme {source.Scheme}");
+    }
 
     protected override void DoPost(Host from, Atom packet)
     {
@@ -216,6 +290,12 @@ namespace PeerCastStation.PCP
         }
       }
     }
+
+    // GivOutputStreamFactory??? Giv を受け取ってメールボックスに追加する。
+    // [(ABCD...ABCD, socket), ... ]
+    //
+    // チャンネル接続処理から、メールボックスを見て、接続があったら
+    // それを対象に PCPSourceStream を使う。→ GET /channel/... 
 
     //ハンドシェイク終了まで一定時間で終わらなかったらタイムアウトする
     //PeerCastのポート開放チェックが最悪15秒かかるのでそれより短くはしないこと
@@ -255,6 +335,7 @@ Stopped:
       var buf = new List<byte>();
       while (line!="") {
         var value = await stream.ReadByteAsync(cancel_token).ConfigureAwait(false);
+        (new Logger(typeof(PCPSourceConnection))).Debug("value = {0}", value);
         if (value<0) throw new IOException();
         buf.Add((byte)value);
         if (buf.Count>=2 && buf[buf.Count-2] == '\r' && buf[buf.Count-1] == '\n') {
@@ -997,16 +1078,20 @@ Stopped:
   {
     override public string Name { get { return "PCP Source"; } }
 
-    private PCPSourceStreamFactory factory;
+    private PCPSourceStreamFactory factory1;
+    private GivSourceStreamFactory factory2;
     override protected void OnAttach()
     {
-      if (factory==null) factory = new PCPSourceStreamFactory(Application.PeerCast);
-      Application.PeerCast.SourceStreamFactories.Add(factory);
+      if (factory1==null) factory1 = new PCPSourceStreamFactory(Application.PeerCast);
+      Application.PeerCast.SourceStreamFactories.Add(factory1);
+      if (factory2==null) factory2 = new GivSourceStreamFactory(Application.PeerCast);
+      Application.PeerCast.SourceStreamFactories.Add(factory2);
     }
 
     override protected void OnDetach()
     {
-      Application.PeerCast.SourceStreamFactories.Remove(factory);
+      Application.PeerCast.SourceStreamFactories.Remove(factory1);
+      Application.PeerCast.SourceStreamFactories.Remove(factory2);
     }
   }
 }

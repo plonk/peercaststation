@@ -219,6 +219,50 @@ namespace PeerCastStation.Core
       return channel;
     }
 
+    class GivSocket
+    {
+      public Guid ChannelId;
+      public AddressFamily AddressFamily;
+      public Socket Socket;
+    }
+    GivSocket[] givSockets = {};
+    public Socket ReceiveGivSocket(Guid channelId, AddressFamily family)
+    {
+      logger.Debug("enter ReceiveGivSocket");
+
+      GivSocket result = null;
+
+      for (int i = 0; i <= 30; i++) {
+        ReplaceCollection(ref givSockets, old => {
+          var idx = Array.FindIndex(old, gs => gs.ChannelId.Equals(channelId) && gs.AddressFamily == family);
+          if (idx < 0) {
+            result = null;
+            return old;
+          }
+          else {
+            result = old[idx];
+            var col = new GivSocket[old.Length - 1];
+            Array.Copy(old, col, idx);
+            Array.Copy(old, idx + 1, col, idx, old.Length - idx - 1);
+            return col;
+          }
+        });
+        if (result != null)
+          break;
+        Thread.Sleep(TimeSpan.FromSeconds(1)); // TODO: なにか同期プリミティブを使ったほうが迅速にリターンできる。
+      }
+      logger.Debug("leave ReceiveGivSocket: result = {0}", result);
+
+      return result?.Socket;
+    }
+    public void AddGivSocket(Guid channelId, AddressFamily family, Socket socket)
+    {
+      logger.Debug("AddGivSocket");
+      ReplaceCollection(ref givSockets, old =>
+        old.Add(new GivSocket { ChannelId = channelId, AddressFamily = family, Socket = socket })
+      );
+    }
+
     /// <summary>
     /// 配信を開始します。
     /// </summary>
