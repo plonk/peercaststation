@@ -335,7 +335,6 @@ Stopped:
       var buf = new List<byte>();
       while (line!="") {
         var value = await stream.ReadByteAsync(cancel_token).ConfigureAwait(false);
-        (new Logger(typeof(PCPSourceConnection))).Debug("value = {0}", value);
         if (value<0) throw new IOException();
         buf.Add((byte)value);
         if (buf.Count>=2 && buf[buf.Count-2] == '\r' && buf[buf.Count-1] == '\n') {
