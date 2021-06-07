@@ -997,6 +997,19 @@ Stopped:
       }
       else if (!IsIgnored(this.SourceUri)) {
         Logger.Debug("Tracker {0} is selected to source.", this.SourceUri);
+        if (SourceUri.Scheme == "giv") {
+          var yp = PeerCast.YellowPages.FirstOrDefault((yp) => yp.AnnounceUri.DnsSafeHost==SourceUri.DnsSafeHost && yp.AnnounceUri.Port==SourceUri.Port);
+          if (yp != null) {
+            var tracker = yp.FindTracker(Channel.ChannelID);
+            if (tracker != null) {
+              SourceUri = tracker;
+              return SourceUri;
+            }
+          }
+          else {
+            Logger.Error("YP not found");
+          }
+        }
         return this.SourceUri;
       }
       else {

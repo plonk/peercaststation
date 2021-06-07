@@ -60,7 +60,7 @@ namespace PeerCastStation.Core
   {
     public PeerCast PeerCast { get; private set; }
     public Channel  Channel { get; private set; }
-    public Uri      SourceUri { get; private set; }
+    public Uri      SourceUri { get; protected set; }
     public StopReason StoppedReason { get; private set; }
     public bool       IsStopped { get { return StoppedReason!=StopReason.None; } }
     public float SendRate { get { return sourceConnection.SendRate; } }

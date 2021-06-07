@@ -178,7 +178,14 @@ namespace PeerCastStation.Core
     public Channel RelayChannel(Guid channel_id, Uri tracker)
     {
       logger.Debug("Requesting channel {0} from {1}", channel_id.ToString("N"), tracker);
-      var channel = new RelayChannel(this, GetNetworkTypeFromUri(tracker), channel_id);
+      NetworkType networkType;
+      if (tracker.Scheme == "giv") {
+        // ホスト名だとIPバージョンが決定できないが、とりあえず動くようにする。
+        networkType = NetworkType.IPv4;
+      } else {
+        networkType = GetNetworkTypeFromUri(tracker);
+      }
+      var channel = new RelayChannel(this, networkType, channel_id);
       channel.Start(tracker);
       ReplaceCollection(ref channels, orig => orig.Add(channel));
       DispatchMonitorEvent(mon => mon.OnChannelChanged(PeerCastChannelAction.Added, channel));

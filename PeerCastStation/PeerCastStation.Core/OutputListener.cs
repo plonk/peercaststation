@@ -283,11 +283,12 @@ namespace PeerCastStation.Core
         retry:
         stream.WriteTimeout = 3000;
         stream.ReadTimeout  = 3000;
-        var handler = await CreateMatchedHandler(
+        (var clientOrNull, var handler) = await CreateMatchedHandler(
           client,
           stream,
           acinfo,
           cancellationToken).ConfigureAwait(false);
+        client = clientOrNull;
         if (handler!=null) {
           logger.Debug("Output stream started {0}", trying);
           var result = await handler.Start(cancellationToken).ConfigureAwait(false);
@@ -308,14 +309,16 @@ namespace PeerCastStation.Core
       catch (OperationCanceledException) {
       }
       finally {
-        client.Client?.Shutdown(SocketShutdown.Send);
-        logger.Debug("Closing client connection");
-        //stream.Close();
-        //client.Close();
+        if (client != null) {
+          client.Client.Shutdown(SocketShutdown.Send);
+          logger.Debug("Closing client connection");
+          stream.Close();
+          client.Close();
+        }
       }
     }
 
-    private async Task<IOutputStream> CreateMatchedHandler(
+    private async Task<(TcpClient, IOutputStream)> CreateMatchedHandler(
         TcpClient client,
         NetworkStream stream,
         AccessControlInfo acinfo,
@@ -338,12 +341,11 @@ namespace PeerCastStation.Core
               if (channel_id.HasValue) {
                 if (factory.Name == "PCPGiv") {
                   PeerCast.AddGivSocket(channel_id.Value, client.Client.AddressFamily, client.Client);
-                  client.Client = null;
-                  return factory.Create(null, acinfo, channel_id.Value);
+                  return (null, factory.Create(null, acinfo, channel_id.Value));
                 }
                 else {
                   var connection = new ConnectionStream(client.Client, stream, header_ary);
-                  return factory.Create(connection, acinfo, channel_id.Value);
+                  return (client, factory.Create(connection, acinfo, channel_id.Value));
                 }
               }
             }
@@ -355,7 +357,7 @@ namespace PeerCastStation.Core
         }
       }
       logger.Debug("CreateMatchedHandle returning null");
-      return null;
+      return (client, null);
     }
 
   }

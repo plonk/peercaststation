@@ -1023,7 +1023,7 @@ namespace PeerCastStation.PCP
               AtomWriter.Write(stream, new Atom(Atom.PCP_HELO, helo));
               var hosts = ReadHosts(stream, channel_id);
               if (hosts.Count == 0) {
-                res = new Uri("giv://0.0.0.0/channel/" + channel_id.ToString("N"));
+                res = new Uri($"giv://{AnnounceUri.DnsSafeHost}:{AnnounceUri.Port}/channel/{channel_id.ToString("N")}");
               }
               else {
                 res = HostToUri(hosts.FirstOrDefault(h => h.IsTracker), channel_id);
